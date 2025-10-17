@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  backend:
+    build: 
+      context: ./backend
+    container_name: clima_backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: clima_user
+      POSTGRES_PASSWORD: clima_password
+      POSTGRES_DB: clima_db
+      
+      MONGO_HOST: mongo
+      MONGO_PORT: 27017
+      MONGO_USER: clima_mongo_user
+      MONGO_PASSWORD: clima_mongo_password
+      
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      - postgres
+      - mongo
+      - redis
+    volumes:
+      - ./backend:/app
+    networks:
+      - clima-network
+
+  postgres:
+    image: postgres:14-alpine
+    container_name: clima_postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: clima_user
+      POSTGRES_PASSWORD: clima_password
+      POSTGRES_DB: clima_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - clima-network
+
+  mongo:
+    image: mongo:7-jammy
+    container_name: clima_mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: clima_mongo_user
+      MONGO_INITDB_ROOT_PASSWORD: clima_mongo_password
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - clima-network
+
+  redis:
+    image: redis:alpine
+    container_name: clima_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - clima-network
+
+volumes:
+  postgres_data:
+    driver: local
+  mongo_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  clima-network:
+    driver: bridge
