@@ -1,25 +1,34 @@
+version: '3.8'
+
+# NOTA: Todos los valores de ${...} serán leídos automáticamente del archivo .env
+# Esto es una característica nativa de Docker Compose (Good Practice).
 services:
+
+  # 1. Backend (Servicio Principal Node.js)
   backend:
     build: 
       context: ./backend
     container_name: clima_backend
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "${PORT}:3000" # Carga el puerto desde .env
     environment:
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
-      POSTGRES_USER: clima_user
-      POSTGRES_PASSWORD: clima_password
-      POSTGRES_DB: clima_db
+      # Variables de CONEXIÓN que el código de Node.js necesita para conectar
+      # Las lee del archivo .env que está en el host.
+      PG_HOST: ${PG_HOST}
+      PG_PORT: 5432
+      PG_USER: ${PG_USER}
+      PG_PASSWORD: ${PG_PASSWORD}
+      PG_DATABASE: ${PG_DATABASE}
       
-      MONGO_HOST: mongo
+      MONGO_HOST: ${MONGO_HOST}
       MONGO_PORT: 27017
-      MONGO_USER: clima_mongo_user
-      MONGO_PASSWORD: clima_mongo_password
+      MONGO_USER: ${MONGO_USER}
+      MONGO_PASSWORD: ${MONGO_PASSWORD}
       
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      
     depends_on:
       - postgres
       - mongo
@@ -28,7 +37,11 @@ services:
       - ./backend:/app
     networks:
       - clima-network
+    # El CMD debe ser tail -f /dev/null mientras no hay código de Node.js
+    command: ["tail", "-f", "/dev/null"]
 
+
+  # 2. PostgreSQL (BD Transaccional - ACID)
   postgres:
     image: postgres:14-alpine
     container_name: clima_postgres
@@ -36,14 +49,16 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_USER: clima_user
-      POSTGRES_PASSWORD: clima_password
-      POSTGRES_DB: clima_db
+      # Credenciales para INICIAR y CONFIGURAR la BD
+      POSTGRES_USER: ${PG_USER}
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
+      POSTGRES_DB: ${PG_DATABASE}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - clima-network
 
+  # 3. MongoDB (BD de Mediciones)
   mongo:
     image: mongo:7-jammy
     container_name: clima_mongo
@@ -51,13 +66,15 @@ services:
     ports:
       - "27017:27017"
     environment:
-      MONGO_INITDB_ROOT_USERNAME: clima_mongo_user
-      MONGO_INITDB_ROOT_PASSWORD: clima_mongo_password
+      # Credenciales para INICIAR el usuario root/admin de Mongo
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
     volumes:
       - mongo_data:/data/db
     networks:
       - clima-network
 
+  # 4. Redis (BD de Cache/Sesiones)
   redis:
     image: redis:alpine
     container_name: clima_redis
