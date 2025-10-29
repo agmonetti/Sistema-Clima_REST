@@ -134,4 +134,3 @@ CREATE INDEX idx_facturas_usuario ON "Facturas"("usuario_id");
 CREATE INDEX idx_facturas_estado ON "Facturas"("estadoFactura");
 CREATE INDEX idx_pagos_factura ON "Pagos"("factura_id");
 CREATE INDEX idx_movimientos_cuenta ON "Movimientos_CC"("fechaMovimiento");
-

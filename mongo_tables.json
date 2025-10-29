@@ -33,6 +33,23 @@
     }
 
     },
+
+    "conversaciones": {
+    "_id": "ObjectId",
+    "participantes":" [ 123, 455] // Claves de los usuarios (user_id de PostgreSQL)",
+    "isGroup": "false, // true si hay más de 2 participantes",
+    "fechaCreacion": "ISODate",
+
+    "justificacion": "// Arreglo de mensajes incrustado (limitado a N mensajes o a 16MB)",
+    "mensajes": [ 
+        {
+        "remitente_id": 123,
+        "mensaje": "txt",
+        "fechaEnvio": "ISODate()"
+        }
+  
+    ]
+    },
     
     "proceso": {
         "_id": "ObjectId",
@@ -44,6 +61,7 @@
     ,"indices": {
         "justificacion": "Creo estos indices para las consutalas mas comunes",
         "uno": "{db.mediciones.createIndex({ sensor_id: 1, timestamp: -1 } )}",
-        "dos": "db.sensores.createIndex( {ubicacion.lon: 1, ubicacion.lat: 1 } )"
+        "dos": "db.sensores.createIndex( {ubicacion.lon: 1, ubicacion.lat: 1 } )",
+        "tres": "db.conversaciones.createIndex({ participantes: 1 })"
     }
 }
