@@ -8,7 +8,6 @@ TTL_POLICY: 3600 (1 hora)
 COMANDO_EJEMPLO: SET session:abc123456 '{"user_id":101,"rol":"usuario"}' EX 3600
 
 
-
 2. ESTADO OPERACIONAL DE SENSORES (TIEMPO REAL)
 Propósito: Detección instantánea de fallas y visualización de estado.
 

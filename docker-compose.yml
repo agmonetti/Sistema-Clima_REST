@@ -37,8 +37,7 @@ services:
       - ./backend:/app
     networks:
       - clima-network
-    # El CMD debe ser tail -f /dev/null mientras no hay código de Node.js
-    command: ["tail", "-f", "/dev/null"]
+    command: ["pnpm", "start"]
 
 
   # 2. PostgreSQL (BD Transaccional - ACID)
