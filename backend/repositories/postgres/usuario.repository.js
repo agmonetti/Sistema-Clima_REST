@@ -1,7 +1,7 @@
 import pool from '../../config/postgres.js'; 
 
 //Create
-export async function crearUsuarios(email) {
+export async function crearUsuarios({nombre,mail,password,rol_descripcion = 'usuario'}) {
     const client = await pool.connect();
     try {
         await client.query('BEGIN'); // Iniciamos la transacción
@@ -12,15 +12,15 @@ export async function crearUsuarios(email) {
             VALUES ($1, $2, (SELECT rol_id FROM "Rol" WHERE descripcion = $3))
             RETURNING usuario_id
         `;
-        const resUsuario = await client.query(insertUsuarioText, [nombre, email, rol_desc]);
+        const resUsuario = await client.query(insertUsuarioText, [nombre, mail, rol_descripcion]);
         const nuevoUsuarioId = resUsuario.rows[0].usuario_id;
         
         // 2. Insertar en Usuario_Credencial
-        const insertCuentaSQL = `
+        const insertCredencialSQL = `
             INSERT INTO "Usuario_Credencial" (usuario_id, contraseña)
             VALUES ($1, $2)
         `;
-        await client.query(insertCuentaSQL, [nuevoUsuarioId]);
+        await client.query(insertCredencialSQL, [nuevoUsuarioId, password]);
         
         // 3. Insertar en Cuentas_Corrientes con saldo inicial de 0
         const insertCuentaText = `

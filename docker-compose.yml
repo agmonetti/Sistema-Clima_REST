@@ -35,6 +35,7 @@ services:
       - redis
     volumes:
       - ./backend:/app
+      - /app/node_modules
     networks:
       - clima-network
     command: ["pnpm", "start"]

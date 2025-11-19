@@ -25,7 +25,7 @@ export async function register(datosUsuario) {
     const passwordHash = await bcrypt.hash(password, salt); // Encripta
 
     // retornamos con la contraseña hasheada
-    const nuevoId = await UsuarioRepository.crearUsuario({
+    const nuevoId = await UsuarioRepository.crearUsuarios({
         nombre,
         mail,
         password: passwordHash,
