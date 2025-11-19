@@ -86,13 +86,40 @@ print(`[INFO] Insertadas ${numMediciones} Mediciones Masivas.`);
 // 4. INSERCIÓN DE CATÁLOGOS Y CHAT
 // ===============================================
 
-db.proceso.insertMany([
-    { nombre: 'Alerta Temp Máxima', descripcion: 'Emite alerta si T > 35C', costo: 2.50 },
-    { nombre: 'Apagar Sensor', descripcion: 'Pasa el estado del sensor a Inactivo', costo: 1.00 }
-]);
+// Limpieza previa
+db.proceso.deleteMany({});
 
-print("[INFO] Catálogo Proceso insertado.");
+const procesos_tpo = [
+    { 
+        nombre: 'Informe Máx/Mín (Anual/Mensual)', 
+        descripcion: 'Informe de humedad y temperaturas máximas y mínimas por ciudades/zonas en rango de fechas.', 
+        costo: 50.00, 
+        codigo: 'INFORME_MAXIMAS_MINIMAS' // <-- Nombre claro
+    },
+    { 
+        nombre: 'Informe Promedios (Anual/Mensual)', 
+        descripcion: 'Informe de humedad y temperaturas promedio por ciudades/zonas en rango de fechas.', 
+        costo: 40.00, 
+        codigo: 'INFORME_PROMEDIOS' // <-- Nombre claro
+    },
+    { 
+        nombre: 'Detección de Alertas', 
+        descripcion: 'Búsqueda de alertas de temperaturas y humedad fuera de rango en una zona y fechas.', 
+        costo: 25.00, 
+        codigo: 'BUSCAR_ALERTAS' // <-- Nombre claro
+    },
+    { 
+        nombre: 'Consulta en Línea (Datos Crudos)', 
+        descripcion: 'Servicio de consulta directa de información de sensores por ciudad/zona.', 
+        costo: 10.00, 
+        codigo: 'CONSULTAR_DATOS' // <-- Nombre claro
+    },
+    { 
+        nombre: 'Suscripción Periódica Mensual', 
+        descripcion: 'Proceso automático de consultas sobre humedad y temperaturas mensualizadas.', 
+        costo: 100.00, 
+        codigo: 'SUSCRIPCION' // <-- Nombre claro
+    }
+];
 
-print("--- MONGODB SEEDING COMPLETE ---");
-
-// NOTA: No es necesario crear Conversaciones ni Proceso, ya que se insertarán al usar la app.
+db.proceso.insertMany(procesos_tpo);
