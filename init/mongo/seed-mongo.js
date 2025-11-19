@@ -94,31 +94,31 @@ const procesos_tpo = [
         nombre: 'Informe Máx/Mín (Anual/Mensual)', 
         descripcion: 'Informe de humedad y temperaturas máximas y mínimas por ciudades/zonas en rango de fechas.', 
         costo: 50.00, 
-        codigo: 'INFORME_MAXIMAS_MINIMAS' // <-- Nombre claro
+        codigo: 'INFORME_MAXIMAS_MINIMAS'
     },
     { 
         nombre: 'Informe Promedios (Anual/Mensual)', 
         descripcion: 'Informe de humedad y temperaturas promedio por ciudades/zonas en rango de fechas.', 
         costo: 40.00, 
-        codigo: 'INFORME_PROMEDIOS' // <-- Nombre claro
+        codigo: 'INFORME_PROMEDIOS' 
     },
     { 
         nombre: 'Detección de Alertas', 
         descripcion: 'Búsqueda de alertas de temperaturas y humedad fuera de rango en una zona y fechas.', 
         costo: 25.00, 
-        codigo: 'BUSCAR_ALERTAS' // <-- Nombre claro
+        codigo: 'BUSCAR_ALERTAS'
     },
     { 
         nombre: 'Consulta en Línea (Datos Crudos)', 
         descripcion: 'Servicio de consulta directa de información de sensores por ciudad/zona.', 
         costo: 10.00, 
-        codigo: 'CONSULTAR_DATOS' // <-- Nombre claro
+        codigo: 'CONSULTAR_DATOS' 
     },
     { 
         nombre: 'Suscripción Periódica Mensual', 
         descripcion: 'Proceso automático de consultas sobre humedad y temperaturas mensualizadas.', 
         costo: 100.00, 
-        codigo: 'SUSCRIPCION' // <-- Nombre claro
+        codigo: 'SUSCRIPCION'
     }
 ];
 
