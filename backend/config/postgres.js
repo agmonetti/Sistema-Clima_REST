@@ -2,7 +2,7 @@ import pg from 'pg';
 
 const { Pool } = pg;
 
-// Configuración usando las variables de entorno de Docker
+// usamos las variables de entorno
 const config = {
   host: process.env.PG_HOST,
   port: process.env.PG_PORT,
@@ -16,14 +16,14 @@ const config = {
 // Creamos el pool
 const pool = new Pool(config);
 
-// Función para probar la conexión inicial
+// Función para probar la conexión inicial - DEPS ELIMINAR
 export const connectPostgres = async () => {
   try {
     const client = await pool.connect();
-    console.log('🐘 [PostgreSQL] Conexión exitosa a la base de datos:', config.database);
+    console.log('PostgreSQL- Conexión exitosa a la base de datos:', config.database);
     client.release(); // 
   } catch (error) {
-    console.error('❌ [PostgreSQL] Error de conexión:', error.message);
+    console.error('PostgreSQL - Error de conexión:', error.message);
     process.exit(1);
   }
 };

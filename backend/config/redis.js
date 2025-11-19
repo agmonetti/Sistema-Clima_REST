@@ -9,7 +9,7 @@ const client = createClient({
 });
 
 client.on('error', (err) => console.error('❌ [Redis] Error del Cliente:', err));
-
+// SOLO PRUEBA- DEPS ELIMINAR
 export const connectRedis = async () => {
   try {
     await client.connect();
