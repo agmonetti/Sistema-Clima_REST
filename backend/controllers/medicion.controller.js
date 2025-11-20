@@ -1,9 +1,7 @@
 import * as IngestaService from '../services/ingesta.service.js';
 
-/**
- * Endpoint: POST /api/medicion/ingesta
- * Responsabilidad: Recibir datos del sensor, validar formato y responder HTTP.
- */
+//recibe datos del sensor y registra mediciones
+ 
 export const registrarMedicion = async (req, res) => {
     try {
         const datos = req.body; // obtenemos los datos formato JSON

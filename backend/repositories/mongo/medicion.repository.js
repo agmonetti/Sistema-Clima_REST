@@ -1,7 +1,7 @@
 // Archivo: backend/repositories/mongo/medicion.repository.js
 import Medicion from '../../models/mongo/Medicion.js';
 
-//1. insertar datos
+// 1- insertar datos
 
 
 export async function crearMedicion(datos) {
@@ -14,7 +14,7 @@ export async function crearMedicion(datos) {
     }
 }
 
-//obtener el reporte de un sensor en un rango de fechas
+//2- obtener el reporte de un sensor en un rango de fechas
 export async function obtenerReporteRango(sensorId, fechaInicio, fechaFin) {
     try {
         const reporte = await Medicion.aggregate([
@@ -48,7 +48,7 @@ export async function obtenerReporteRango(sensorId, fechaInicio, fechaFin) {
     }
 }
 
-//sirve para obtener las ultimas n mediciones de un sensor
+//3- sirve para obtener las ultimas n mediciones de un sensor
 export async function obtenerUltimasMediciones(sensorId, limite = 20) {
     try {
         const historial = await Medicion.find({ sensor_id: sensorId })
@@ -58,5 +58,60 @@ export async function obtenerUltimasMediciones(sensorId, limite = 20) {
         return historial;
     } catch (error) {
         throw new Error(`Error obteniendo historial: ${error.message}`);
+    }
+}
+
+//4- buscar alertas de temperatura
+export async function buscarAlertas({ sensorIds, variable = 'temperatura',umbral, operador = 'mayor', fechaInicio, fechaFin, limite = 50 }) {
+    try {
+
+        const camposValidos = ['temperatura', 'humedad'];
+        if (!camposValidos.includes(variable)) {
+            throw new Error(`Variable no valida. Existen: ${camposValidos.join(' o ')}`);
+        }
+
+        //filtro para que entienda mongo
+        let queryTemperatura = {};
+        if (operador === 'mayor') {
+            queryTemperatura = { $gt: umbral }; 
+        } else {
+            queryTemperatura = { $lt: umbral }; 
+        }
+
+        //filtro de fecha 
+        let queryFecha = {};
+        if (fechaInicio && fechaFin) {
+            queryFecha = { 
+                $gte: new Date(fechaInicio), 
+                $lte: new Date(fechaFin) 
+            };
+        } else {
+            // si no se pasa como parametro, ultimas 24 horas
+            const haceUnDia = new Date();
+            haceUnDia.setDate(haceUnDia.getDate() - 1);
+            queryFecha = { $gte: haceUnDia };
+        }
+
+        // recibimos un array, si es un solo sensor lo convertimos a array
+        const idsParaBuscar = Array.isArray(sensorIds) ? sensorIds : [sensorIds];
+
+        //le decimos a mong que use esa variable
+        const queryMongo = {
+            sensor_id: { $in: idsParaBuscar },
+            timestamp: queryFecha,
+            [variable]: queryValor 
+        };
+
+
+        const alertas = await Medicion.find(queryMongo) 
+            .sort({ timestamp: -1 })
+            .limit(limite)
+            .populate('sensor_id', 'nombre ubicacion')  
+            .lean();
+
+        return alertas;
+
+    } catch (error) {
+        throw new Error(`Error buscando alertas en Mongo: ${error.message}`);
     }
 }

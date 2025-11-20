@@ -1,6 +1,7 @@
 import express from 'express';
 import authRoutes from './routes/auth.routes.js';
 import medicionRoutes from './routes/medicion.routes.js';
+import transaccionRoutes from './routes/transaccion.routes.js';
 
 const app = express();
 app.use(express.json()); //imp porque vamos a enviar json data. 
@@ -9,5 +10,6 @@ app.use(express.json()); //imp porque vamos a enviar json data.
 // Rutas
 app.use('/api/auth', authRoutes);
 app.use('/api/medicion', medicionRoutes);
+app.use
 app.get('/', (req, res) => res.send('API funcionando '));
 export default app;
