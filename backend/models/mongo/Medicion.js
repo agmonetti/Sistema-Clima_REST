@@ -12,4 +12,4 @@ const medicionSchema = new Schema({
     }
 });
 
-export default mongoose.model('Medicion', medicionSchema);
+export default mongoose.model('Medicion', medicionSchema, 'mediciones');

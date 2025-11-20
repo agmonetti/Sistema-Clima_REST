@@ -1,9 +1,8 @@
-// Archivo: backend/repositories/mongo/medicion.repository.js
 import Medicion from '../../models/mongo/Medicion.js';
+import mongoose from 'mongoose';
+const { Types } = mongoose;
 
 // 1- insertar datos
-
-
 export async function crearMedicion(datos) {
     try {
         // Mongoose simplifica todo: .create() valida y guarda.
@@ -21,7 +20,7 @@ export async function obtenerReporteRango(sensorId, fechaInicio, fechaFin) {
             {
                 // filtramos por sensor y por rango de fechas
                 $match: {
-                    sensor_id: sensorId, 
+                    sensor_id: new mongoose.Types.ObjectId(String(sensorId)), 
                     timestamp: { 
                         $gte: new Date(fechaInicio), 
                         $lte: new Date(fechaFin)    
@@ -71,11 +70,11 @@ export async function buscarAlertas({ sensorIds, variable = 'temperatura',umbral
         }
 
         //filtro para que entienda mongo
-        let queryTemperatura = {};
+        let queryValor = {};
         if (operador === 'mayor') {
-            queryTemperatura = { $gt: umbral }; 
+            queryValor = { $gt: umbral }; 
         } else {
-            queryTemperatura = { $lt: umbral }; 
+            queryValor = { $lt: umbral }; 
         }
 
         //filtro de fecha 
