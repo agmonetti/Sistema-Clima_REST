@@ -2,6 +2,11 @@ import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
+if (!JWT_SECRET) {
+    console.error("FATAL ERROR: La variable de entorno JWT_SECRET no está definida.");
+    process.exit(1);
+}
+
 // validamos el token
 export const verifyToken = (req, res, next) => {
     const tokenHeader = req.headers['authorization'];

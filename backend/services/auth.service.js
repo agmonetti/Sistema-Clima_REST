@@ -5,6 +5,12 @@ import * as UsuarioRepository from '../repositories/postgres/usuario.repository.
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
+
+if (!JWT_SECRET) {
+    console.error("FATAL ERROR: La variable de entorno JWT_SECRET no está definida.");
+    process.exit(1); 
+}
+
 /**
  * Lógica de REGISTRO
  * 1. Encriptar contraseña.
