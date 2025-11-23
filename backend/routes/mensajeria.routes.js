@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { verifyToken } from '../middlewares/auth.middleware.js';
-import { MensajeriaController } from '../controllers/mensajeria.controller.js';
-
+import * as MensajeriaController from '../controllers/mensajeria.controller.js';
 const router = Router();
 router.use(verifyToken);
 

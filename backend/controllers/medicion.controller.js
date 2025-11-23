@@ -1,5 +1,5 @@
 import * as IngestaService from '../services/ingesta.service.js';
-
+import * as MedicionRepository from '../repositories/mongo/medicion.repository.js';
 //recibe datos del sensor y registra mediciones
  
 export const registrarMedicion = async (req, res) => {
@@ -33,5 +33,24 @@ export const registrarMedicion = async (req, res) => {
         res.status(500).json({ 
             error: 'Error interno del servidor al procesar la medición.' 
         });
+    }
+};
+export const listarSensores = async (req, res) => {
+    try {
+        const { ciudad } = req.query; // Leemos de la URL
+        const sensores = await MedicionRepository.listarSensores(ciudad);
+        res.json(sensores);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Nueva función para el combo de ciudades
+export const obtenerCiudades = async (req, res) => {
+    try {
+        const ciudades = await MedicionRepository.listarCiudades();
+        res.json(ciudades);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 };

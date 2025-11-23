@@ -5,6 +5,7 @@ import transaccionRoutes from './routes/transaccion.routes.js';
 import userRoutes from './routes/usuario.routes.js';
 import cors from 'cors';
 import mensajeriaRoutes from './routes/mensajeria.routes.js';
+import procesoRoutes from './routes/proceso.routes.js';
 
 const app = express();
 app.use(express.json()); //imp porque vamos a enviar json data. 
@@ -31,6 +32,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 // Rutasarreglado ese error del connection reset.
+app.use('/api/procesos', procesoRoutes);
 app.use('/api/mensajeria', mensajeriaRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/medicion', medicionRoutes);

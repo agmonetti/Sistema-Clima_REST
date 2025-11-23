@@ -120,3 +120,91 @@ export async function obtenerHistorialUsuario(usuarioId) {
     const result = await pool.query(SQL, [usuarioId]);
     return result.rows;
 }
+
+//funcion para obtener el saldo actual
+export async function obtenerSaldo(usuarioId) {
+    const query = `
+        SELECT "saldoActual" 
+        FROM "Cuentas_Corrientes" 
+        WHERE usuario_id = $1
+    `;
+    const result = await pool.query(query, [usuarioId]);
+    // Si no tiene cuenta, retornamos 0
+    return result.rows[0] ? parseFloat(result.rows[0].saldoActual) : 0;
+}
+
+//funcion para recargar el salod
+export async function recargarSaldo(usuarioId, monto) {
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        // 1. Actualizar el saldo (Sumar)
+        const updateQuery = `
+            UPDATE "Cuentas_Corrientes"
+            SET "saldoActual" = "saldoActual" + $1
+            WHERE usuario_id = $2
+            RETURNING "saldoActual"
+        `;
+        const resUpdate = await client.query(updateQuery, [monto, usuarioId]);
+        
+        if (resUpdate.rowCount === 0) {
+            throw new Error("Usuario sin cuenta corriente activa.");
+        }
+        
+        const nuevoSaldo = resUpdate.rows[0].saldoActual;
+
+        // 2. Registrar el movimiento (Auditoría)
+        const insertMovimiento = `
+            INSERT INTO "Movimientos_CC" (cuenta_id, monto, "fechaMovimiento")
+            VALUES (
+                (SELECT cuenta_id FROM "Cuentas_Corrientes" WHERE usuario_id = $1),
+                $2,
+                NOW()
+            )
+        `;
+        await client.query(insertMovimiento, [usuarioId, monto]);
+
+        await client.query('COMMIT');
+        return nuevoSaldo;
+
+    } catch (error) {
+        await client.query('ROLLBACK');
+        throw error;
+    } finally {
+        client.release();
+    }
+}
+
+// 4- guardar el resultado exitoso de un proceso
+export async function guardarResultadoExitoso(solicitudId, resultadoObj) {
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        // 1. Marcar la solicitud principal como completada
+        await client.query(
+            'UPDATE "Solicitud_Proceso" SET "isCompleted" = TRUE WHERE solicitud_id = $1', 
+            [solicitudId]
+        );
+
+        // 2. Insertar el registro en el historial con el JSON del resultado
+        // Convertimos el objeto JS a String para guardarlo en la columna TEXT
+        const resultadoStr = JSON.stringify(resultadoObj);
+        
+        const insertHistorial = `
+            INSERT INTO "Historial_Ejecucion_Procesos" (solicitud_id, resultado, "isCompleted")
+            VALUES ($1, $2, TRUE)
+        `;
+        await client.query(insertHistorial, [solicitudId, resultadoStr]);
+
+        await client.query('COMMIT');
+        console.log(`✅ Resultado guardado para solicitud #${solicitudId}`);
+
+    } catch (error) {
+        await client.query('ROLLBACK');
+        throw new Error(`Error guardando resultado: ${error.message}`);
+    } finally {
+        client.release();
+    }
+}

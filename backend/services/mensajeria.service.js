@@ -1,13 +1,13 @@
-import { MensajeriaRepository } from '../repositories/mongo/mensajeria.repository.js';
+// CAMBIO CLAVE: Importamos todo el módulo con un alias
+import * as MensajeriaRepository from '../repositories/mongo/mensajeria.repository.js';
 
 export const MensajeriaService = {
     async iniciarChatPrivado(miId, otroId) {
-    
-        if (miId == otroId) throw new Error("No puedes hablar solo"); // (Aquí falla con 400)
+        if (miId == otroId) throw new Error("No puedes hablar solo");
+
         // 1. Verificar si ya existe
         const existente = await MensajeriaRepository.buscarPrivada(miId, otroId);
         if (existente) return existente;
-
 
         // 2. Si no, crear
         return await MensajeriaRepository.crearConversacion([miId, otroId], null, false);

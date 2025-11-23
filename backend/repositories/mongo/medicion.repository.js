@@ -1,6 +1,6 @@
 import Medicion from '../../models/mongo/Medicion.js';
 import mongoose from 'mongoose';
-const { Types } = mongoose;
+import Sensor from '../../models/mongo/Sensor.js';
 
 // 1- insertar datos
 export async function crearMedicion(datos) {
@@ -112,5 +112,32 @@ export async function buscarAlertas({ sensorIds, variable = 'temperatura',umbral
 
     } catch (error) {
         throw new Error(`Error buscando alertas en Mongo: ${error.message}`);
+    }
+}
+export async function listarSensores(ciudad) {
+    try {
+        const filtro = {};
+        if (ciudad) {
+            // Filtramos por el campo incrustado 'ubicacion.ciudad'
+            filtro['ubicacion.ciudad'] = ciudad;
+        }
+
+        // Traemos hasta 100 si hay filtro, sino 20 genéricos
+        const limite = ciudad ? 100 : 20;
+
+        return await Sensor.find(filtro, 'nombre ubicacion _id')
+            .limit(limite)
+            .lean();
+    } catch (error) {
+        throw new Error(`Error listando sensores: ${error.message}`);
+    }
+}
+
+// NUEVA FUNCIÓN: Obtener lista de ciudades únicas para el combo
+export async function listarCiudades() {
+    try {
+        return await Sensor.distinct('ubicacion.ciudad');
+    } catch (error) {
+        throw new Error(`Error obteniendo ciudades: ${error.message}`);
     }
 }

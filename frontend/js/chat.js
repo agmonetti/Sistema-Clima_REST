@@ -8,7 +8,7 @@ const chatWidget = {
     inyectarHTML() {
         const html = `
             <button id="btn-chat-float" class="btn btn-primary rounded-circle shadow p-3" 
-                style="position: fixed; bottom: 20px; right: 20px; z-index: 1000; width: 60px; height: 60px;">
+                style="position: fixed; bottom: 20px; right: 20px; z-index: 1000; width: 80px; height: 80px;">
                 💬
             </button>
 
@@ -30,7 +30,7 @@ const chatWidget = {
 
                 <div id="vista-mensajes" class="card-body p-0 d-none d-flex flex-column" style="height: 100%;">
                     <div class="bg-light p-2 border-bottom text-center">
-                        <button class="btn btn-sm btn-secondary float-start" id="btn-volver-lista">⬅</button>
+                        <button class="btn btn-sm btn-link text-decoration-none fw-bold fs-5 p-0 me-2 text-dark" id="btn-volver-lista" title="Volver">❮</button>
                         <small class="fw-bold" id="nombre-chat-activo">Chat</small>
                     </div>
                     
@@ -110,10 +110,17 @@ const chatWidget = {
 
     async cargarListaChats() {
         const lista = document.getElementById('lista-conversaciones');
-        lista.innerHTML = '<li class="list-group-item text-center text-muted">Cargando...</li>';
         
         try {
             const chats = await api.get('/mensajeria');
+
+
+            lista.innerHTML = ''; 
+            
+            if (!chats || chats.length === 0) {
+                lista.innerHTML = '<li class="list-group-item text-center text-muted border-0">No tienes chats.</li>';
+                return;
+            }
             const miUsuario = JSON.parse(localStorage.getItem('usuario'));
             const miId = parseInt(miUsuario.usuario_id);
 
@@ -180,7 +187,7 @@ const chatWidget = {
         
         // La ruta que creamos en el paso anterior
         try {
-            const user = await api.get(`/usuarios/id:${userId}`);
+            const user = await api.get(`/usuarios/id/${userId}`);
             // Asumo que tu objeto de usuario tiene un campo 'nombre'
             return user.nombre || user.email; 
         } catch (error) {

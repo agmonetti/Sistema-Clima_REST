@@ -70,7 +70,7 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
     volumes:
       - mongo_data:/data/db
-      - ./init/mongo/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+      - ./init/mongo/:/docker-entrypoint-initdb.d/:ro
     networks:
       - clima-network
 

@@ -4,21 +4,21 @@ import * as TransaccionService from '../services/transaccion.service.js';
 export const solicitarProceso = async (req, res) => {
     try {
         //extraemos los datos del body
-        const { usuario_id, proceso_id, parametros } = req.body;
-
+        const usuarioId = req.user.id; 
+        const { procesoId, parametros } = req.body; 
         // validacion de datos
-        if (!usuario_id || !proceso_id) {
+        if (!procesoId) {
             return res.status(400).json({ 
                 error: 'Faltan datos obligatorios: usuario_id, proceso_id' 
             });
         }
 
-        console.log(`Nueva solicitud recibida. Usuario: ${usuario_id}, Proceso: ${proceso_id}`);
+        console.log(`Nueva solicitud recibida. Usuario: ${usuarioId}, Proceso: ${procesoId}`);
 
         // llamamos al servicio
         const resultado = await TransaccionService.solicitarProceso({
-            usuarioId: usuario_id,
-            procesoId: proceso_id,
+            usuarioId: usuarioId,
+            procesoId: procesoId,
             parametros: parametros || {} 
         });
 
@@ -47,5 +47,31 @@ export const verHistorial = async (req, res) => {
     } catch (error) {
         console.error('Error obteniendo historial:', error);
         res.status(500).json({ error: 'Error al obtener el historial.' });
+    }
+};
+// obtener saldo actual
+export const obtenerSaldo = async (req, res) => {
+    try {
+        const userId = req.user.id; 
+        const saldo = await TransaccionService.getSaldo(userId);
+        res.json({ saldo });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+// recargar saldo
+export const recargar = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { monto } = req.body; 
+
+        const nuevoSaldo = await TransaccionService.cargarDinero(userId, parseFloat(monto));
+        
+        res.json({ 
+            message: "Carga exitosa", 
+            nuevoSaldo: nuevoSaldo 
+        });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
     }
 };

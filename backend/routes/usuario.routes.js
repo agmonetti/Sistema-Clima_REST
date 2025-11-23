@@ -1,9 +1,8 @@
 import { Router } from 'express';
 import { verifyToken, requireRole } from '../middlewares/auth.middleware.js';
-import { UsuarioController}  from '../controllers/usuario.controller.js';
-
+import * as UsuarioController from '../controllers/usuario.controller.js';
 const router = Router();
-
+router.use(verifyToken);
 // Eliminar usuario
 // 1. verifyToken: Asegura que quien llama esté logueado.
 // 2. requireRole(['admin']): Asegura que SOLO un admin pase.

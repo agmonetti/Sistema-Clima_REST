@@ -25,17 +25,43 @@ export async function solicitarProceso({ usuarioId, procesoId, parametros }) {
     let resultadoDelProceso = null;
 
     try {
+        console.log("🔀 Ejecutando switch para código:", proceso.codigo);
         switch (proceso.codigo) {
             case 'INFORME_MAXIMAS_MINIMAS':
-            case 'INFORME_PROMEDIOS':
                 if (!parametros?.sensorId || !parametros?.fechaInicio || !parametros?.fechaFin) {
                     throw new Error('Faltan parámetros: sensorId, fechaInicio, fechaFin');
                 }
-                resultadoDelProceso = await MedicionRepository.obtenerReporteRango(
+                const rawMaxMin = await MedicionRepository.obtenerReporteRango(
                     parametros.sensorId,
                     parametros.fechaInicio,
                     parametros.fechaFin
                 );
+                
+                if (rawMaxMin) {
+                    resultadoDelProceso = {
+                        tempMaxima: rawMaxMin.tempMaxima,
+                        tempMinima: rawMaxMin.tempMinima,
+                        cantMediciones: rawMaxMin.cantMediciones
+                    };
+                }
+                break;
+
+            case 'INFORME_PROMEDIOS':
+                if (!parametros?.sensorId || !parametros?.fechaInicio || !parametros?.fechaFin) {
+                    throw new Error('Faltan parámetros: sensorId, fechaInicio, fechaFin');
+                }
+                const rawProm = await MedicionRepository.obtenerReporteRango(
+                    parametros.sensorId,
+                    parametros.fechaInicio,
+                    parametros.fechaFin
+                );
+
+                if (rawProm) {
+                    resultadoDelProceso = {
+                        tempPromedio: rawProm.tempPromedio,
+                        cantMediciones: rawProm.cantMediciones
+                    };
+                }
                 break;
 
             case 'CONSULTAR_DATOS':
@@ -60,6 +86,7 @@ export async function solicitarProceso({ usuarioId, procesoId, parametros }) {
                 resultadoDelProceso = { mensaje: "Proceso registrado. Ejecución diferida." };
                 break;
         }
+        console.log("📊 RESULTADO BRUTO DE MONGO:", resultadoDelProceso);
 
     } catch (logicError) {
         // si fallo la ejecucion del proceso, se reembolsa al usuario
@@ -75,8 +102,13 @@ export async function solicitarProceso({ usuarioId, procesoId, parametros }) {
         
         throw new Error(`Error en el proceso: ${logicError.message}. Tu saldo ha sido reembolsado.`);
     }
-
-    //caso final si todo sale bien
+    
+    if (resultadoDelProceso) {
+            await TransaccionRepository.guardarResultadoExitoso(
+                ticket.solicitud_id, 
+                resultadoDelProceso
+            );
+        }
     return {
         status: 'success',
         ticket: {
@@ -90,4 +122,19 @@ export async function solicitarProceso({ usuarioId, procesoId, parametros }) {
 
 export async function obtenerHistorial(usuarioId) {
     return await TransaccionRepository.obtenerHistorialUsuario(usuarioId);
+}
+
+export async function getSaldo(usuarioId) {
+    return await TransaccionRepository.obtenerSaldo(usuarioId);
+}
+
+export async function cargarDinero(usuarioId, monto) {
+    // Validación de negocio
+    if (!monto || monto <= 0) {
+        throw new Error("El monto a recargar debe ser positivo");
+    }
+    
+    // Delegamos al repo
+    const nuevoSaldo = await TransaccionRepository.recargarSaldo(usuarioId, monto);
+    return nuevoSaldo;
 }
