@@ -11,10 +11,12 @@ export async function runMigrations() {
         console.log('🔍 Checking database schema...');
         
         // Check if parametros column exists in Solicitud_Proceso table
+        // Use table_schema to ensure we're checking the right schema (public by default)
         const checkColumnQuery = `
             SELECT column_name 
             FROM information_schema.columns 
-            WHERE table_name = 'Solicitud_Proceso' 
+            WHERE table_schema = 'public'
+            AND table_name = 'Solicitud_Proceso' 
             AND column_name = 'parametros'
         `;
         
@@ -23,9 +25,24 @@ export async function runMigrations() {
         if (result.rows.length === 0) {
             console.log('⚠️  Column "parametros" not found in Solicitud_Proceso table. Adding it...');
             
-            await client.query('BEGIN');
-            await client.query('ALTER TABLE "Solicitud_Proceso" ADD COLUMN "parametros" JSONB');
-            await client.query('COMMIT');
+            // Use DO block for better error handling and idempotency
+            const migrationQuery = `
+                DO $$
+                BEGIN
+                    IF NOT EXISTS (
+                        SELECT 1 
+                        FROM information_schema.columns 
+                        WHERE table_schema = 'public'
+                        AND table_name = 'Solicitud_Proceso' 
+                        AND column_name = 'parametros'
+                    ) THEN
+                        ALTER TABLE "Solicitud_Proceso" ADD COLUMN "parametros" JSONB;
+                        RAISE NOTICE 'Column parametros added successfully';
+                    END IF;
+                END $$;
+            `;
+            
+            await client.query(migrationQuery);
             
             console.log('✅ Column "parametros" added successfully!');
         } else {
@@ -34,7 +51,6 @@ export async function runMigrations() {
         
     } catch (error) {
         console.error('❌ Migration error:', error.message);
-        await client.query('ROLLBACK').catch(() => {});
         // Don't throw - let the app start anyway, but log the error
     } finally {
         client.release();
