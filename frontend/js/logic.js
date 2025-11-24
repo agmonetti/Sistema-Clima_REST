@@ -599,7 +599,7 @@ const logic = {
                     let tablaHTML = `
                         <div class="col-12"><div class="table-responsive">
                         <table class="table table-striped table-hover border bg-white">
-                            <thead class="table-dark"><tr>${columnas.map(c => `<th class="text-capitalize">${c}</th>`).join('')}</tr></thead>
+                            <thead class="table-dark"><tr>${columnas.map(c => `<th class="text-capitalize">${this.escapeHtml(c)}</th>`).join('')}</tr></thead>
                             <tbody>
                     `;
 
@@ -610,7 +610,7 @@ const logic = {
                             if (typeof valor === 'number' && !Number.isInteger(valor)) valor = valor.toFixed(2);
                             else if (typeof valor === 'string' && valor.includes('T') && valor.endsWith('Z')) valor = new Date(valor).toLocaleString();
                             else if (typeof valor === 'object' && valor !== null) valor = valor.nombre || JSON.stringify(valor);
-                            tablaHTML += `<td>${valor}</td>`;
+                            tablaHTML += `<td>${this.escapeHtml(String(valor))}</td>`;
                         });
                         tablaHTML += '</tr>';
                     });
@@ -636,15 +636,15 @@ const logic = {
                     contenedor.innerHTML += `
                         <div class="col-md-6">
                             <div class="dato-card">
-                                <div class="dato-titulo">${etiquetas[key] || key}</div>
-                                <div class="dato-valor">${valor}</div>
+                                <div class="dato-titulo">${etiquetas[key] || this.escapeHtml(key)}</div>
+                                <div class="dato-valor">${this.escapeHtml(String(valor))}</div>
                             </div>
                         </div>`;
                 }
 
             // 4. CASE TEXT
             } else {
-                contenedor.innerHTML = `<div class="col-12"><div class="alert alert-light border">${resultado}</div></div>`;
+                contenedor.innerHTML = `<div class="col-12"><div class="alert alert-light border">${this.escapeHtml(String(resultado))}</div></div>`;
             }
             
             // Open the modal
