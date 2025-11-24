@@ -528,6 +528,7 @@ const logic = {
             let parametrosHTML = '';
             
             // Check if resultado exists and has parametros
+            // Backwards compatible: if old data doesn't have parametros structure, show appropriate message
             if (datos.resultado) {
                 let resultadoObj;
                 try {
@@ -559,9 +560,12 @@ const logic = {
                     }
                     
                     if (params.fechaInicio) {
-                        const fechaInicio = new Date(params.fechaInicio).toLocaleDateString('es-AR', {
-                            year: 'numeric', month: 'long', day: 'numeric'
-                        });
+                        const fechaInicioDate = new Date(params.fechaInicio);
+                        const fechaInicio = !isNaN(fechaInicioDate.getTime()) 
+                            ? fechaInicioDate.toLocaleDateString('es-AR', {
+                                year: 'numeric', month: 'long', day: 'numeric'
+                              })
+                            : escapeHtml(String(params.fechaInicio));
                         parametrosHTML += `
                             <dt class="col-sm-5">Fecha Inicio:</dt>
                             <dd class="col-sm-7">${escapeHtml(fechaInicio)}</dd>
@@ -569,9 +573,12 @@ const logic = {
                     }
                     
                     if (params.fechaFin) {
-                        const fechaFin = new Date(params.fechaFin).toLocaleDateString('es-AR', {
-                            year: 'numeric', month: 'long', day: 'numeric'
-                        });
+                        const fechaFinDate = new Date(params.fechaFin);
+                        const fechaFin = !isNaN(fechaFinDate.getTime())
+                            ? fechaFinDate.toLocaleDateString('es-AR', {
+                                year: 'numeric', month: 'long', day: 'numeric'
+                              })
+                            : escapeHtml(String(params.fechaFin));
                         parametrosHTML += `
                             <dt class="col-sm-5">Fecha Fin:</dt>
                             <dd class="col-sm-7">${escapeHtml(fechaFin)}</dd>
