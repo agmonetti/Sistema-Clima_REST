@@ -13,6 +13,27 @@ export const MensajeriaService = {
         return await MensajeriaRepository.crearConversacion([miId, otroId], null, false);
     },
 
+    async crearGrupo(creadorId, participantesIds, nombreGrupo) {
+        // Validar que haya al menos 2 participantes adicionales (total 3+ con el creador)
+        if (!participantesIds || participantesIds.length < 2) {
+            throw new Error("Un grupo debe tener al menos 3 participantes");
+        }
+
+        // Remover duplicados y asegurar que el creador esté incluido
+        const miembrosUnicos = [...new Set([creadorId, ...participantesIds])];
+        
+        if (miembrosUnicos.length < 3) {
+            throw new Error("Un grupo debe tener al menos 3 participantes diferentes");
+        }
+
+        // Validar nombre del grupo
+        if (!nombreGrupo || nombreGrupo.trim() === '') {
+            throw new Error("El grupo debe tener un nombre");
+        }
+
+        return await MensajeriaRepository.crearConversacion(miembrosUnicos, nombreGrupo.trim(), true);
+    },
+
     async enviarMensaje(conversacionId, emisorId, texto) {
         if (!texto) throw new Error("Mensaje vacío");
     
