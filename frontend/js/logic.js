@@ -499,12 +499,168 @@ const logic = {
     verDetalle(datosString) {
         try {
             const datos = JSON.parse(decodeURIComponent(datosString));
-            localStorage.setItem('temp_reporte_detalle', JSON.stringify(datos));
-            window.location.href = 'reporte.html';
+            
+            // Set modal title
+            document.getElementById('detalle-titulo').textContent = `Solicitud #${datos.solicitud_id || 'N/A'}`;
+            
+            // Set JSON display
+            document.getElementById('detalle-json-display').textContent = JSON.stringify(datos, null, 2);
+            
+            let resultado = datos.resultado;
+            
+            // Parse if string from Postgres
+            if (typeof resultado === 'string') {
+                try { resultado = JSON.parse(resultado); } catch (e) {}
+            }
+            
+            // --- RENDER PARAMETERS SECTION ---
+            const parametros = resultado?.parametros;
+            if (parametros) {
+                const parametrosSection = document.getElementById('detalle-parametros-section');
+                const parametrosContenido = document.getElementById('detalle-parametros-contenido');
+                
+                let parametrosHTML = '<div class="row g-2">';
+                
+                // Sensor information
+                if (parametros.sensorInfo) {
+                    parametrosHTML += `
+                        <div class="col-md-12">
+                            <strong>🔬 Sensor:</strong> ${this.escapeHtml(parametros.sensorInfo.nombre || 'N/A')}
+                            ${parametros.sensorInfo.ciudad ? ` (${this.escapeHtml(parametros.sensorInfo.ciudad)})` : ''}
+                            ${parametros.sensorInfo.tipo ? ` - <span class="badge bg-secondary">${this.escapeHtml(parametros.sensorInfo.tipo)}</span>` : ''}
+                        </div>`;
+                } else if (parametros.sensorId) {
+                    parametrosHTML += `
+                        <div class="col-md-12">
+                            <strong>🔬 Sensor ID:</strong> ${this.escapeHtml(parametros.sensorId)}
+                        </div>`;
+                }
+                
+                // Date range
+                if (parametros.fechaInicio && parametros.fechaFin) {
+                    const fechaInicio = new Date(parametros.fechaInicio).toLocaleDateString('es-AR');
+                    const fechaFin = new Date(parametros.fechaFin).toLocaleDateString('es-AR');
+                    parametrosHTML += `
+                        <div class="col-md-6">
+                            <strong>📅 Fecha Inicio:</strong> ${fechaInicio}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>📅 Fecha Fin:</strong> ${fechaFin}
+                        </div>`;
+                }
+                
+                // Threshold
+                if (parametros.umbral !== undefined && parametros.umbral !== null) {
+                    parametrosHTML += `
+                        <div class="col-md-6">
+                            <strong>⚠️ Umbral:</strong> ${this.escapeHtml(parametros.umbral)}
+                        </div>`;
+                }
+                
+                // Additional parameters
+                const ignoredKeys = ['sensorId', 'sensorInfo', 'fechaInicio', 'fechaFin', 'umbral'];
+                Object.keys(parametros).forEach(key => {
+                    if (!ignoredKeys.includes(key) && parametros[key] !== null && parametros[key] !== undefined) {
+                        parametrosHTML += `
+                            <div class="col-md-6">
+                                <strong>${this.escapeHtml(key)}:</strong> ${this.escapeHtml(String(parametros[key]))}
+                            </div>`;
+                    }
+                });
+                
+                parametrosHTML += '</div>';
+                parametrosContenido.innerHTML = parametrosHTML;
+                parametrosSection.style.display = 'block';
+            } else {
+                document.getElementById('detalle-parametros-section').style.display = 'none';
+            }
+            
+            // Extract the actual resultado (not the wrapper object)
+            if (resultado && resultado.resultado) {
+                resultado = resultado.resultado;
+            }
+            
+            const contenedor = document.getElementById('detalle-contenido-visual');
+            contenedor.innerHTML = '';
+            
+            // --- RENDER RESULTS ---
+            
+            // 1. If null or empty
+            if (!resultado) {
+                contenedor.innerHTML = '<div class="col-12"><div class="alert alert-info">Sin resultados visuales.</div></div>';
+            
+            // 2. CASE ARRAY (Tables)
+            } else if (Array.isArray(resultado)) {
+                if (resultado.length === 0) {
+                    contenedor.innerHTML = '<div class="col-12"><div class="alert alert-warning">Consulta vacía.</div></div>';
+                } else {
+                    const columnas = Object.keys(resultado[0]).filter(k => k !== '_id' && k !== '__v');
+                    
+                    let tablaHTML = `
+                        <div class="col-12"><div class="table-responsive">
+                        <table class="table table-striped table-hover border bg-white">
+                            <thead class="table-dark"><tr>${columnas.map(c => `<th class="text-capitalize">${c}</th>`).join('')}</tr></thead>
+                            <tbody>
+                    `;
+
+                    resultado.forEach(fila => {
+                        tablaHTML += '<tr>';
+                        columnas.forEach(col => {
+                            let valor = fila[col];
+                            if (typeof valor === 'number' && !Number.isInteger(valor)) valor = valor.toFixed(2);
+                            else if (typeof valor === 'string' && valor.includes('T') && valor.endsWith('Z')) valor = new Date(valor).toLocaleString();
+                            else if (typeof valor === 'object' && valor !== null) valor = valor.nombre || JSON.stringify(valor);
+                            tablaHTML += `<td>${valor}</td>`;
+                        });
+                        tablaHTML += '</tr>';
+                    });
+                    tablaHTML += '</tbody></table></div></div>';
+                    contenedor.innerHTML = tablaHTML;
+                }
+
+            // 3. CASE OBJECT (Cards)
+            } else if (typeof resultado === 'object') {
+                const etiquetas = {
+                    'tempMaxima': '🌡️ Temp. Máxima',
+                    'tempMinima': '🥶 Temp. Mínima',
+                    'tempPromedio': '📊 Promedio',
+                    'cantMediciones': '📡 Mediciones',
+                    'stdDev': '📉 Desviación Std'
+                };
+
+                for (const [key, value] of Object.entries(resultado)) {
+                    if (key === '_id' || value === null) continue;
+                    let valor = value;
+                    if (typeof value === 'number' && !Number.isInteger(value)) valor = value.toFixed(2) + (key.includes('temp') ? '°' : '');
+                    
+                    contenedor.innerHTML += `
+                        <div class="col-md-6">
+                            <div class="dato-card">
+                                <div class="dato-titulo">${etiquetas[key] || key}</div>
+                                <div class="dato-valor">${valor}</div>
+                            </div>
+                        </div>`;
+                }
+
+            // 4. CASE TEXT
+            } else {
+                contenedor.innerHTML = `<div class="col-12"><div class="alert alert-light border">${resultado}</div></div>`;
+            }
+            
+            // Open the modal
+            new bootstrap.Modal(document.getElementById('modalVerDetalle')).show();
+            
         } catch (e) {
             console.error(e);
-            alert("Error al abrir el reporte.");
+            alert("Error al abrir el detalle.");
         }
+    },
+    
+    // Helper function to escape HTML and prevent XSS
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     },
 
     // ==================================================
