@@ -1,5 +1,6 @@
 // CAMBIO CLAVE: Importamos todo el módulo con un alias
 import * as MensajeriaRepository from '../repositories/mongo/mensajeria.repository.js';
+import * as UsuarioService from './usuario.service.js';
 
 export const MensajeriaService = {
     async iniciarChatPrivado(miId, otroId) {
@@ -29,6 +30,14 @@ export const MensajeriaService = {
         // Validar nombre del grupo
         if (!nombreGrupo || nombreGrupo.trim() === '') {
             throw new Error("El grupo debe tener un nombre");
+        }
+
+        // Validar que todos los participantes existan en la base de datos
+        for (const participanteId of miembrosUnicos) {
+            const usuario = await UsuarioService.buscarPorId(participanteId);
+            if (!usuario) {
+                throw new Error(`El usuario con ID ${participanteId} no existe`);
+            }
         }
 
         return await MensajeriaRepository.crearConversacion(miembrosUnicos, nombreGrupo.trim(), true);
