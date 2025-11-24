@@ -26,6 +26,16 @@
             </div>
             <div class="card-body bg-light">
                 
+                <!-- Parameters Section -->
+                <div id="parametros-section" class="mb-4" style="display: none;">
+                    <h6 class="text-muted mb-3">📋 Parámetros de la Solicitud</h6>
+                    <div class="card border-info">
+                        <div class="card-body" id="parametros-contenido">
+                        </div>
+                    </div>
+                </div>
+                
+                <h6 class="text-muted mb-3">📊 Resultados</h6>
                 <div id="contenido-visual" class="row">
                     <p class="text-center text-muted">Procesando datos...</p>
                 </div>
@@ -73,6 +83,72 @@
             if (typeof resultado === 'string') {
                 try { resultado = JSON.parse(resultado); } catch (e) {}
             }
+            
+            // --- NEW: RENDER PARAMETERS SECTION ---
+            const parametros = resultado?.parametros;
+            if (parametros) {
+                const parametrosSection = document.getElementById('parametros-section');
+                const parametrosContenido = document.getElementById('parametros-contenido');
+                
+                let parametrosHTML = '<div class="row g-2">';
+                
+                // Sensor information
+                if (parametros.sensorInfo) {
+                    parametrosHTML += `
+                        <div class="col-md-12">
+                            <strong>🔬 Sensor:</strong> ${escapeHtml(parametros.sensorInfo.nombre || 'N/A')}
+                            ${parametros.sensorInfo.ciudad ? ` (${escapeHtml(parametros.sensorInfo.ciudad)})` : ''}
+                            ${parametros.sensorInfo.tipo ? ` - <span class="badge bg-secondary">${escapeHtml(parametros.sensorInfo.tipo)}</span>` : ''}
+                        </div>`;
+                } else if (parametros.sensorId) {
+                    parametrosHTML += `
+                        <div class="col-md-12">
+                            <strong>🔬 Sensor ID:</strong> ${escapeHtml(parametros.sensorId)}
+                        </div>`;
+                }
+                
+                // Date range
+                if (parametros.fechaInicio && parametros.fechaFin) {
+                    const fechaInicio = new Date(parametros.fechaInicio).toLocaleDateString('es-AR');
+                    const fechaFin = new Date(parametros.fechaFin).toLocaleDateString('es-AR');
+                    parametrosHTML += `
+                        <div class="col-md-6">
+                            <strong>📅 Fecha Inicio:</strong> ${fechaInicio}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>📅 Fecha Fin:</strong> ${fechaFin}
+                        </div>`;
+                }
+                
+                // Threshold
+                if (parametros.umbral !== undefined && parametros.umbral !== null) {
+                    parametrosHTML += `
+                        <div class="col-md-6">
+                            <strong>⚠️ Umbral:</strong> ${escapeHtml(parametros.umbral)}
+                        </div>`;
+                }
+                
+                // Additional parameters
+                const ignoredKeys = ['sensorId', 'sensorInfo', 'fechaInicio', 'fechaFin', 'umbral'];
+                Object.keys(parametros).forEach(key => {
+                    if (!ignoredKeys.includes(key) && parametros[key] !== null && parametros[key] !== undefined) {
+                        parametrosHTML += `
+                            <div class="col-md-6">
+                                <strong>${escapeHtml(key)}:</strong> ${escapeHtml(String(parametros[key]))}
+                            </div>`;
+                    }
+                });
+                
+                parametrosHTML += '</div>';
+                parametrosContenido.innerHTML = parametrosHTML;
+                parametrosSection.style.display = 'block';
+            }
+            
+            // Extract the actual resultado (not the wrapper object)
+            if (resultado && resultado.resultado) {
+                resultado = resultado.resultado;
+            }
+
 
             const contenedor = document.getElementById('contenido-visual');
             contenedor.innerHTML = ''; 
@@ -141,6 +217,13 @@
                 contenedor.innerHTML = `<div class="col-12"><div class="alert alert-light border">${resultado}</div></div>`;
             }
         });
+        
+        // Helper function to escape HTML and prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
 
 
     </script>

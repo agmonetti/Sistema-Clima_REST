@@ -1,6 +1,7 @@
 import * as ProcesoRepository from '../repositories/mongo/proceso.repository.js';
 import * as TransaccionRepository from '../repositories/postgres/transaccion.repository.js';
 import * as MedicionRepository from '../repositories/mongo/medicion.repository.js';
+import Sensor from '../models/mongo/Sensor.js';
 
 export async function solicitarProceso({ usuarioId, procesoId, parametros }) {
     
@@ -126,9 +127,32 @@ export async function solicitarProceso({ usuarioId, procesoId, parametros }) {
     }
     
     if (resultadoDelProceso) {
+            // Enrich parametros with sensor information if sensorId is present
+            const parametrosEnriquecidos = { ...parametros };
+            
+            if (parametros.sensorId) {
+                try {
+                    const sensor = await Sensor.findById(parametros.sensorId).lean();
+                    if (sensor) {
+                        parametrosEnriquecidos.sensorInfo = {
+                            nombre: sensor.nombre,
+                            ciudad: sensor.ubicacion?.ciudad,
+                            tipo: sensor.configuracion?.tipo_sensor
+                        };
+                    }
+                } catch (err) {
+                    console.warn('Could not fetch sensor details:', err.message);
+                }
+            }
+            
+            // Include both the result AND the enriched parameters used
+            const datosCompletos = {
+                parametros: parametrosEnriquecidos,
+                resultado: resultadoDelProceso
+            };
             await TransaccionRepository.guardarResultadoExitoso(
                 ticket.solicitud_id, 
-                resultadoDelProceso
+                datosCompletos
             );
             }
   
