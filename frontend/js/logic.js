@@ -512,11 +512,18 @@ const logic = {
                 return;
             }
 
+            // Helper function to escape HTML
+            const escapeHtml = (str) => {
+                const div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            };
+
             let detalles = '<div class="list-group">';
             
             // Format and display parameters
             if (parametros.sensorId) {
-                detalles += `<div class="list-group-item"><strong>Sensor ID:</strong> ${parametros.sensorId}</div>`;
+                detalles += `<div class="list-group-item"><strong>Sensor ID:</strong> ${escapeHtml(parametros.sensorId)}</div>`;
             }
             if (parametros.fechaInicio) {
                 const fechaInicio = new Date(parametros.fechaInicio).toLocaleString();
@@ -530,10 +537,10 @@ const logic = {
                 detalles += `<div class="list-group-item"><strong>Umbral:</strong> ${parametros.umbral}</div>`;
             }
             if (parametros.variable) {
-                detalles += `<div class="list-group-item"><strong>Variable:</strong> ${parametros.variable}</div>`;
+                detalles += `<div class="list-group-item"><strong>Variable:</strong> ${escapeHtml(parametros.variable)}</div>`;
             }
             if (parametros.operador) {
-                detalles += `<div class="list-group-item"><strong>Operador:</strong> ${parametros.operador}</div>`;
+                detalles += `<div class="list-group-item"><strong>Operador:</strong> ${escapeHtml(parametros.operador)}</div>`;
             }
             
             detalles += '</div>';
