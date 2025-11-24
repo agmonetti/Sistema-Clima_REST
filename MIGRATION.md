@@ -6,9 +6,34 @@ If you encounter a 400 Bad Request error when trying to create a new solicitud (
 
 ## Solution
 
-### For Existing Databases (Running Containers)
+### Automatic Migration (Recommended)
 
-If your Docker containers are already running and have data, you need to apply the migration:
+**The migration now runs automatically when the backend starts!**
+
+Simply restart your backend service:
+
+```bash
+docker compose restart backend
+```
+
+Or if running with docker compose:
+
+```bash
+docker compose down
+docker compose up -d
+```
+
+The backend will check if the `parametros` column exists and add it automatically if it's missing. You'll see a message in the logs:
+
+```
+🔍 Checking database schema...
+⚠️  Column "parametros" not found in Solicitud_Proceso table. Adding it...
+✅ Column "parametros" added successfully!
+```
+
+### Manual Migration (If Needed)
+
+If for some reason the automatic migration doesn't work, you can apply it manually:
 
 1. **Connect to the PostgreSQL container:**
    ```bash
@@ -30,8 +55,8 @@ If your Docker containers are already running and have data, you need to apply t
 If you're setting up a new environment, simply run:
 
 ```bash
-docker-compose down -v
-docker-compose up -d
+docker compose down -v
+docker compose up -d
 ```
 
 The `parametros` column is already included in the `init/postgres/codigoPSQL.sql` file and will be created automatically.
