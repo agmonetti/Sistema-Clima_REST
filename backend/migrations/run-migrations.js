@@ -10,33 +10,56 @@ export async function runMigrations() {
     try {
         console.log('🔍 Checking database schema...');
         
-        // Use DO block for idempotent migration with built-in existence check
-        const migrationQuery = `
-            DO $$
-            BEGIN
-                IF NOT EXISTS (
-                    SELECT 1 
-                    FROM information_schema.columns 
-                    WHERE table_schema = 'public'
-                    AND table_name = 'Solicitud_Proceso' 
-                    AND column_name = 'parametros'
-                ) THEN
-                    ALTER TABLE "Solicitud_Proceso" ADD COLUMN "parametros" JSONB;
-                    RAISE NOTICE 'Column parametros added successfully';
-                ELSE
-                    RAISE NOTICE 'Column parametros already exists';
-                END IF;
-            END $$;
+        // First check if column exists to provide clear feedback
+        const checkQuery = `
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_schema = 'public'
+            AND table_name = 'Solicitud_Proceso' 
+            AND column_name = 'parametros'
         `;
         
-        await client.query(migrationQuery);
-        console.log('✅ Database schema is up to date');
+        const checkResult = await client.query(checkQuery);
+        
+        if (checkResult.rows.length === 0) {
+            console.log('⚠️  Column "parametros" not found in Solicitud_Proceso table. Adding it...');
+            
+            // Use DO block for idempotent migration
+            const migrationQuery = `
+                DO $$
+                BEGIN
+                    IF NOT EXISTS (
+                        SELECT 1 
+                        FROM information_schema.columns 
+                        WHERE table_schema = 'public'
+                        AND table_name = 'Solicitud_Proceso' 
+                        AND column_name = 'parametros'
+                    ) THEN
+                        ALTER TABLE "Solicitud_Proceso" ADD COLUMN "parametros" JSONB;
+                    END IF;
+                END $$;
+            `;
+            
+            await client.query(migrationQuery);
+            console.log('✅ Column "parametros" added successfully!');
+        } else {
+            console.log('✅ Database schema is up to date (parametros column exists)');
+        }
         
     } catch (error) {
         console.error('❌ Migration error:', error.message);
         console.error('Stack trace:', error.stack);
-        // Don't throw - let the app start anyway, but warn about potential issues
-        console.warn('⚠️  Warning: Migration failed. The application may not work correctly if the database schema is outdated.');
+        console.error('');
+        console.error('⚠️  MIGRATION FAILED: The application may not work correctly.');
+        console.error('    Possible causes:');
+        console.error('    - Database connection issues');
+        console.error('    - Insufficient database permissions (need ALTER TABLE permission)');
+        console.error('    - Table "Solicitud_Proceso" does not exist');
+        console.error('');
+        console.error('    To fix manually, connect to the database and run:');
+        console.error('    ALTER TABLE "Solicitud_Proceso" ADD COLUMN "parametros" JSONB;');
+        console.error('');
+        console.error('    Or see MIGRATION.md for detailed instructions.');
     } finally {
         client.release();
     }

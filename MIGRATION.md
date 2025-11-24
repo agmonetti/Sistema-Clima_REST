@@ -23,17 +23,39 @@ docker compose down
 docker compose up -d
 ```
 
-The backend will check if the `parametros` column exists and add it automatically if it's missing. You'll see a message in the logs:
+The backend will check if the `parametros` column exists and add it automatically if it's missing. You'll see one of these messages in the logs:
 
+**If the column needs to be added:**
 ```
 🔍 Checking database schema...
 ⚠️  Column "parametros" not found in Solicitud_Proceso table. Adding it...
 ✅ Column "parametros" added successfully!
 ```
 
-### Manual Migration (If Needed)
+**If the column already exists:**
+```
+🔍 Checking database schema...
+✅ Database schema is up to date (parametros column exists)
+```
 
-If for some reason the automatic migration doesn't work, you can apply it manually:
+**If migration fails:**
+```
+❌ Migration error: <error message>
+⚠️  MIGRATION FAILED: The application may not work correctly.
+    Possible causes:
+    - Database connection issues
+    - Insufficient database permissions (need ALTER TABLE permission)
+    - Table "Solicitud_Proceso" does not exist
+    
+    To fix manually, connect to the database and run:
+    ALTER TABLE "Solicitud_Proceso" ADD COLUMN "parametros" JSONB;
+```
+
+If you see the migration failure message, follow the manual migration steps below.
+
+### Manual Migration (If Automatic Migration Fails)
+
+If the automatic migration doesn't work due to permissions or other issues:
 
 1. **Connect to the PostgreSQL container:**
    ```bash
