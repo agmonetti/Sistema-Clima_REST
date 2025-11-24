@@ -27,11 +27,11 @@ export async function crearSolicitudConFactura({ usuarioId, procesoIdMongo, cost
 
         // creamos la solcitud del proceso
         const insertSolicitud = `
-            INSERT INTO "Solicitud_Proceso" (usuario_id, proceso_id, "isCompleted", "parametros")
-            VALUES ($1, $2, FALSE, $3)
+            INSERT INTO "Solicitud_Proceso" (usuario_id, proceso_id, "isCompleted")
+            VALUES ($1, $2, FALSE)
             RETURNING solicitud_id
         `;
-        const resSol = await client.query(insertSolicitud, [usuarioId, procesoIdMongo, JSON.stringify(parametros || {})]);
+        const resSol = await client.query(insertSolicitud, [usuarioId, procesoIdMongo]);
         const solicitudId = resSol.rows[0].solicitud_id;
 
         // se crea la factura
