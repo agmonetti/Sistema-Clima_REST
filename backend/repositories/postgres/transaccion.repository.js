@@ -107,7 +107,6 @@ export async function obtenerHistorialUsuario(usuarioId) {
             sp.proceso_id AS proceso_mongo_id, 
             sp."fechaSolicitud", 
             sp."isCompleted",
-            sp."parametros",
             f.factura_id,
             f."estadoFactura",
             h.resultado
