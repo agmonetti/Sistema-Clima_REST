@@ -130,7 +130,7 @@ export async function solicitarProceso({ usuarioId, procesoId, parametros }) {
                 ticket.solicitud_id, 
                 resultadoDelProceso
             );
-        }
+            }
     return {
         status: 'success',
         ticket: {
@@ -159,4 +159,5 @@ export async function cargarDinero(usuarioId, monto) {
     // Delegamos al repo
     const nuevoSaldo = await TransaccionRepository.recargarSaldo(usuarioId, monto);
     return nuevoSaldo;
+
 }
