@@ -431,6 +431,14 @@ const logic = {
     // 4. LÓGICA DE CLIENTE: HISTORIAL Y REPORTES
     // ==================================================
 
+    // Helper function for HTML escaping to prevent XSS
+    escapeHtml(text) {
+        if (text === null || text === undefined) return '';
+        const div = document.createElement('div');
+        div.textContent = String(text);
+        return div.innerHTML;
+    },
+
     async cargarHistorial() {
         const contenedor = document.getElementById('tabla-historial-container');
         if(!contenedor) return;
@@ -454,6 +462,7 @@ const logic = {
                             <th>Estado</th>
                             <th>Factura</th>
                             <th>Acción</th>
+                            <th>Ver Detalle</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -469,6 +478,9 @@ const logic = {
 
                 // Codificar para pasar al otro HTML
                 const datosSeguros = encodeURIComponent(JSON.stringify(item));
+                
+                // Codificar parámetros para el modal
+                const parametrosSeguros = item.parametros ? encodeURIComponent(JSON.stringify(item.parametros)) : '';
 
                 html += `
                     <tr>
@@ -479,6 +491,13 @@ const logic = {
                             <button class="btn btn-sm btn-primary py-0" 
                                 onclick="logic.verDetalle('${datosSeguros}')">
                                 Ver 📄
+                            </button>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-secondary py-0" 
+                                onclick="logic.verParametros('${parametrosSeguros}')"
+                                ${!item.parametros ? 'disabled' : ''}>
+                                🔍
                             </button>
                         </td>
                     </tr>
@@ -492,6 +511,67 @@ const logic = {
             console.error(error);
             contenedor.innerHTML = `<p class="text-danger">Error cargando historial.</p>`;
         }
+    },
+
+    verParametros(parametrosString) {
+        const modalBody = document.getElementById('modal-parametros-body');
+        
+        if (!parametrosString) {
+            modalBody.innerHTML = '<div class="alert alert-warning">No hay parámetros disponibles.</div>';
+            new bootstrap.Modal(document.getElementById('modalParametros')).show();
+            return;
+        }
+
+        try {
+            const parametros = JSON.parse(decodeURIComponent(parametrosString));
+            
+            // Labels for display
+            const etiquetas = {
+                'sensorId': '📡 Sensor ID',
+                'fechaInicio': '📅 Fecha Inicio',
+                'fechaFin': '📅 Fecha Fin',
+                'umbral': '⚠️ Umbral',
+                'variable': '📊 Variable',
+                'operador': '🔢 Operador'
+            };
+
+            let html = '<div class="list-group">';
+            
+            for (const [key, value] of Object.entries(parametros)) {
+                if (value === null || value === undefined) continue;
+                
+                let displayValue = value;
+                
+                // Format dates
+                if (key.toLowerCase().includes('fecha') && typeof value === 'string') {
+                    try {
+                        displayValue = new Date(value).toLocaleString();
+                    } catch (e) {
+                        displayValue = this.escapeHtml(value);
+                    }
+                } else {
+                    displayValue = this.escapeHtml(value);
+                }
+                
+                const label = etiquetas[key] || this.escapeHtml(key);
+                
+                html += `
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <span class="text-muted">${label}</span>
+                        <strong>${displayValue}</strong>
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            modalBody.innerHTML = html;
+            
+        } catch (e) {
+            console.error(e);
+            modalBody.innerHTML = '<div class="alert alert-danger">Error al procesar parámetros.</div>';
+        }
+
+        new bootstrap.Modal(document.getElementById('modalParametros')).show();
     },
 
     verDetalle(datosString) {
