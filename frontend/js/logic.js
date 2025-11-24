@@ -553,11 +553,11 @@ const logic = {
                     displayValue = this.escapeHtml(value);
                 }
                 
-                const label = etiquetas[key] || key;
+                const label = etiquetas[key] || this.escapeHtml(key);
                 
                 html += `
                     <div class="list-group-item d-flex justify-content-between align-items-center">
-                        <span class="text-muted">${this.escapeHtml(label)}</span>
+                        <span class="text-muted">${label}</span>
                         <strong>${displayValue}</strong>
                     </div>
                 `;
