@@ -53,7 +53,7 @@ const logic = {
                     <button class="btn btn-success btn-sm" 
                         onclick="logic.revivirUsuario(${u.usuario_id})" 
                         title="Revivir Usuario">
-                        ♻️ Revivir
+                        🔋 Revivir
                     </button>`;
             } else {
                 // CASO ACTIVO NORMAL
@@ -67,11 +67,15 @@ const logic = {
                         🗑️
                     </button>`;
             }
-
+            const estadoDot = u.isOnline 
+                ? '<span class="badge bg-success rounded-pill" title="Online">● En Linea</span>' 
+                : '<span class="badge bg-secondary rounded-pill" title="Offline">○ Desconectado</span>';
             html += `
                 <tr class="${claseFila}">
                     <td>${u.usuario_id}</td>
-                    <td>${nombreMostrar}</td>
+                    <td>${nombreMostrar}<br>
+                        ${estadoDot}
+                        </td>
                     <td>${u.mail}</td>
                     <td><span class="badge bg-light text-dark border">${u.rol}</span></td>
                     <td>
@@ -414,7 +418,12 @@ const logic = {
                 const modal = bootstrap.Modal.getInstance(modalEl);
                 modal.hide();
 
-                alert(`¡Éxito! Solicitud #${res.ticket.solicitud_id} procesada.`);
+                //alert(`¡Éxito! Solicitud #${res.ticket.solicitud_id} procesada.`);
+                if (res.fromCache) {
+                    alert(`¡RESULTADO INSTANTÁNEO!\n\nEsta consulta ya se había realizado recientemente.\nLos datos se recuperaron de la Memoria Caché (Redis) para máxima velocidad.\n\nTicket #${res.ticket.solicitud_id} generado.`);
+                } else {
+                    alert(`Solicitud procesada en Tiempo Real.\n\nTicket #${res.ticket.solicitud_id} generado exitosamente en la base de datos.`);
+                }
                 this.obtenerSaldo();      
                 this.cargarHistorial();   
             }
@@ -512,6 +521,7 @@ const logic = {
         this.obtenerSaldo();
         this.cargarCatalogo();
         this.cargarHistorial();
+        this.iniciarLatido();
         
         const form = document.getElementById('form-recarga');
         if (form) {
@@ -646,4 +656,19 @@ const logic = {
         const id = document.getElementById('tec-sensor-id').value;
         if (id) this.cargarHistorialSensor(id);
     },
+
+    async enviarPing() {
+        try {
+            await api.post('/auth/ping', {});
+        }
+        catch (e) {
+            console.warn("Error enviando ping:", e);
+        }
+    
+    },
+
+    iniciarLatido() {
+        this.enviarPing();
+        setInterval(() => this.enviarPing(), 60000); // Cada 60 segundos
+    }
 };

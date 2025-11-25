@@ -13,7 +13,7 @@ COPY package.json pnpm-lock.yaml ./
 
 # 5. INSTALACIÓN DE DEPENDENCIAS
 # --frozen-lockfile: Asegura que se instalen versiones exactas del lockfile (ideal para CI/Docker)
-RUN pnpm install --frozen-lockfile
+RUN pnpm install
 
 # 6. CÓDIGO FUENTE
 COPY . .

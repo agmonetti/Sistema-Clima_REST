@@ -1,4 +1,5 @@
 import * as UsuarioService from '../services/usuario.service.js';
+import redisClient from '../config/redis.js';
 
 // Exportación individual (igual que auth.controller.js)
 export const deleteUser = async (req, res) => {
@@ -14,7 +15,14 @@ export const deleteUser = async (req, res) => {
 export const getUsers = async (req, res) => {
     try {
         const usuarios = await UsuarioService.obtenerTodos();
-        res.status(200).json(usuarios);   
+        const usuariosConEstado = await Promise.all(usuarios.map(async (u) => {
+            const isOnline = await redisClient.get(`ONLINE:${u.usuario_id}`);
+            return {
+                ...u,
+                isOnline: !!isOnline 
+            };
+        }));
+        res.status(200).json(usuariosConEstado);   
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Error al obtener la lista de usuarios.' });
