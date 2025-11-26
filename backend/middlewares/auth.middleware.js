@@ -1,45 +1,40 @@
-import jwt from 'jsonwebtoken';
+// Middleware de autenticación basado en sesiones (SSR)
+// NO usa JWT - usa sesiones del servidor con Redis
 
-const JWT_SECRET = process.env.JWT_SECRET;
-
-if (!JWT_SECRET) {
-    console.error("FATAL ERROR: La variable de entorno JWT_SECRET no está definida.");
-    process.exit(1);
-}
-
-// validamos el token
-export const verifyToken = (req, res, next) => {
-    const tokenHeader = req.headers['authorization'];
-
-    if (!tokenHeader) {
-        return res.status(403).json({ error: 'Acceso denegado. No se proporcionó token.' });
+// Verificar que el usuario tiene sesión activa
+export const requireAuth = (req, res, next) => {
+    if (!req.session || !req.session.user) {
+        req.session.error = 'Debes iniciar sesión para acceder a esta página';
+        return res.redirect('/auth/login');
     }
-
-    // El formato suele ser "Bearer <token>", quitamos el "Bearer "
-    const token = tokenHeader.split(' ')[1];
-
-    if (!token) {
-        return res.status(403).json({ error: 'Formato de token inválido.' });
-    }
-
-    try {
-        const decoded = jwt.verify(token, JWT_SECRET);
-        req.user = decoded; // inyectamos el usuario en la peticion
-        next(); // Pasa al siguiente paso (el controlador u otro middleware)
-    } catch (error) {
-        return res.status(401).json({ error: 'Token inválido o expirado.' });
-    }
+    // Inyectamos el usuario en req para compatibilidad con controladores existentes
+    req.user = req.session.user;
+    next();
 };
 
-// para validar los tres roles
+// Verificar roles específicos
 export const requireRole = (rolesPermitidos) => {
     return (req, res, next) => {
-        // req.user existe porque 'verifyToken' corrió antes
-        if (!req.user || !rolesPermitidos.includes(req.user.rol)) {
-            return res.status(403).json({ 
-                error: `Acceso prohibido. Se requiere rol: ${rolesPermitidos.join(' o ')}` 
+        if (!req.session || !req.session.user) {
+            req.session.error = 'Debes iniciar sesión para acceder a esta página';
+            return res.redirect('/auth/login');
+        }
+
+        const userRole = req.session.user.rol;
+        
+        if (!rolesPermitidos.includes(userRole)) {
+            return res.status(403).render('error', {
+                title: 'Acceso Denegado',
+                message: `No tienes permisos para acceder a esta página. Se requiere rol: ${rolesPermitidos.join(' o ')}`,
+                error: {}
             });
         }
+        
+        // Inyectamos el usuario en req para compatibilidad
+        req.user = req.session.user;
         next();
     };
 };
+
+// Alias para mantener compatibilidad con código existente
+export const verifyToken = requireAuth;

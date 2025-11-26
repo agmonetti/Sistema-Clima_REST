@@ -1,0 +1,88 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar') %>
+
+<main class="main-content">
+    <div class="container">
+        <div class="page-header">
+            <h1>📄 Resultado del Proceso</h1>
+            <a href="/procesos" class="btn btn-outline">← Volver</a>
+        </div>
+
+        <div class="detail-card">
+            <div class="detail-header">
+                <h2>Solicitud #<%= solicitud.solicitud_id %></h2>
+                <span class="badge badge-<%= solicitud.isCompleted ? 'success' : 'warning' %> badge-lg">
+                    <%= solicitud.isCompleted ? 'Completado' : 'Pendiente' %>
+                </span>
+            </div>
+
+            <div class="detail-section">
+                <h3>Información de la Solicitud</h3>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <span class="label">Proceso ID</span>
+                        <span class="value"><%= solicitud.proceso_mongo_id %></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Fecha de Solicitud</span>
+                        <span class="value"><%= new Date(solicitud.fechaSolicitud).toLocaleString('es-AR') %></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Estado Factura</span>
+                        <span class="value">
+                            <span class="badge badge-<%= solicitud.estadoFactura === 'pagada' ? 'success' : solicitud.estadoFactura === 'pendiente' ? 'warning' : 'danger' %>">
+                                <%= solicitud.estadoFactura || 'N/A' %>
+                            </span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <% if (solicitud.resultado) { %>
+            <div class="detail-section">
+                <h3>Resultado del Proceso</h3>
+                <div class="result-container">
+                    <% 
+                    let resultado = solicitud.resultado;
+                    if (typeof resultado === 'string') {
+                        try { resultado = JSON.parse(resultado); } catch(e) {}
+                    }
+                    %>
+                    <% if (typeof resultado === 'object' && resultado !== null) { %>
+                    <div class="result-grid">
+                        <% Object.entries(resultado).forEach(function([key, value]) { %>
+                        <div class="result-item">
+                            <span class="result-label"><%= key %></span>
+                            <span class="result-value">
+                                <% if (typeof value === 'number') { %>
+                                    <%= value.toFixed ? value.toFixed(2) : value %>
+                                <% } else if (Array.isArray(value)) { %>
+                                    <%= value.length %> elementos
+                                <% } else { %>
+                                    <%= value %>
+                                <% } %>
+                            </span>
+                        </div>
+                        <% }); %>
+                    </div>
+                    <% } else { %>
+                    <pre class="result-raw"><%= resultado %></pre>
+                    <% } %>
+                </div>
+            </div>
+            <% } else { %>
+            <div class="detail-section">
+                <div class="empty-state">
+                    <p>El proceso aún no tiene resultados disponibles</p>
+                </div>
+            </div>
+            <% } %>
+
+            <div class="detail-actions">
+                <a href="/procesos" class="btn btn-primary">Volver a Procesos</a>
+            </div>
+        </div>
+    </div>
+</main>
+
+<%- include('../partials/footer') %>

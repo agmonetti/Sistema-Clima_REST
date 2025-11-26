@@ -1,0 +1,45 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar') %>
+
+<main class="main-content">
+    <div class="container">
+        <div class="page-header">
+            <h1>👤 Perfil de Usuario</h1>
+            <a href="/usuarios" class="btn btn-outline">← Volver</a>
+        </div>
+
+        <div class="detail-card">
+            <div class="detail-header">
+                <h2><%= usuario.nombre %></h2>
+                <span class="badge badge-<%= usuario.rol === 'admin' ? 'danger' : usuario.rol === 'tecnico' ? 'warning' : 'primary' %> badge-lg">
+                    <%= usuario.rol %>
+                </span>
+            </div>
+
+            <div class="detail-section">
+                <h3>Información Personal</h3>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <span class="label">ID de Usuario</span>
+                        <span class="value">#<%= usuario.usuario_id %></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Email</span>
+                        <span class="value"><%= usuario.mail %></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Saldo Actual</span>
+                        <span class="value">$<%= usuario.saldoActual ? usuario.saldoActual.toFixed(2) : '0.00' %></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-actions">
+                <a href="/usuarios/<%= usuario.usuario_id %>/editar" class="btn btn-warning">✏️ Editar</a>
+                <a href="/mensajeria/nuevo?destinatarioId=<%= usuario.usuario_id %>" class="btn btn-info">💬 Enviar Mensaje</a>
+            </div>
+        </div>
+    </div>
+</main>
+
+<%- include('../partials/footer') %>

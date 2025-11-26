@@ -1,0 +1,51 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar') %>
+
+<main class="main-content">
+    <div class="container">
+        <div class="page-header">
+            <h1>✏️ Editar Usuario</h1>
+            <a href="/usuarios" class="btn btn-outline">← Volver</a>
+        </div>
+
+        <div class="form-container">
+            <form action="/usuarios/<%= usuario.usuario_id %>?_method=PUT" method="POST" class="form-card">
+                <h2>Información del Usuario</h2>
+                
+                <div class="form-group">
+                    <label for="nombre">Nombre Completo *</label>
+                    <input type="text" id="nombre" name="nombre" required 
+                           value="<%= usuario.nombre %>" class="form-control">
+                </div>
+                
+                <div class="form-group">
+                    <label for="mail">Correo Electrónico *</label>
+                    <input type="email" id="mail" name="mail" required 
+                           value="<%= usuario.mail %>" class="form-control">
+                </div>
+                
+                <div class="form-group">
+                    <label for="rol">Rol</label>
+                    <select name="rol" id="rol" class="form-control">
+                        <option value="usuario" <%= usuario.rol === 'usuario' ? 'selected' : '' %>>Usuario</option>
+                        <option value="tecnico" <%= usuario.rol === 'tecnico' ? 'selected' : '' %>>Técnico</option>
+                        <option value="admin" <%= usuario.rol === 'admin' ? 'selected' : '' %>>Administrador</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Nueva Contraseña (dejar vacío para no cambiar)</label>
+                    <input type="password" id="password" name="password" 
+                           minlength="6" placeholder="Mínimo 6 caracteres" class="form-control">
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                    <a href="/usuarios/<%= usuario.usuario_id %>" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+<%- include('../partials/footer') %>

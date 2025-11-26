@@ -1,0 +1,105 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar') %>
+
+<main class="main-content">
+    <div class="container">
+        <div class="page-header">
+            <h1>📊 Historial de Mediciones</h1>
+        </div>
+
+        <!-- Filtros -->
+        <div class="filters-section">
+            <form action="/mediciones" method="GET" class="filters-form">
+                <div class="form-group">
+                    <label for="sensorId">Sensor</label>
+                    <select name="sensorId" id="sensorId" class="form-control">
+                        <option value="">Todos los sensores</option>
+                        <% sensores.forEach(function(s) { %>
+                        <option value="<%= s._id %>" <%= sensorId === String(s._id) ? 'selected' : '' %>>
+                            <%= s.nombre %> (<%= s.ubicacion?.ciudad || 'N/A' %>)
+                        </option>
+                        <% }); %>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="ciudad">Ciudad</label>
+                    <select name="ciudad" id="ciudad" class="form-control">
+                        <option value="">Todas las ciudades</option>
+                        <% ciudades.forEach(function(c) { %>
+                        <option value="<%= c %>" <%= ciudad === c ? 'selected' : '' %>><%= c %></option>
+                        <% }); %>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-secondary">Filtrar</button>
+                <% if (sensorId || ciudad) { %>
+                <a href="/mediciones" class="btn btn-outline">Limpiar</a>
+                <% } %>
+            </form>
+        </div>
+
+        <!-- Tabla de mediciones -->
+        <div class="table-container">
+            <% if (mediciones.length === 0) { %>
+            <div class="empty-state">
+                <p>No se encontraron mediciones</p>
+                <% if (!sensorId) { %>
+                <p class="hint">Selecciona un sensor para ver sus mediciones</p>
+                <% } %>
+            </div>
+            <% } else { %>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Fecha/Hora</th>
+                        <th>Sensor</th>
+                        <th>Temperatura</th>
+                        <th>Humedad</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% mediciones.forEach(function(m) { %>
+                    <tr>
+                        <td><%= new Date(m.timestamp).toLocaleString('es-AR') %></td>
+                        <td>
+                            <% if (m.sensor_id && typeof m.sensor_id === 'object') { %>
+                            <%= m.sensor_id.nombre || 'N/A' %>
+                            <% } else { %>
+                            Sensor ID: <%= m.sensor_id %>
+                            <% } %>
+                        </td>
+                        <td>
+                            <% 
+                            let tempClass = 'temp-normal';
+                            if (m.temperatura >= 35) tempClass = 'temp-hot';
+                            else if (m.temperatura >= 25) tempClass = 'temp-warm';
+                            else if (m.temperatura <= 5) tempClass = 'temp-cold';
+                            else if (m.temperatura <= 15) tempClass = 'temp-cool';
+                            %>
+                            <span class="temperature <%= tempClass %>">
+                                <%= m.temperatura !== undefined ? m.temperatura.toFixed(1) + '°C' : 'N/A' %>
+                            </span>
+                        </td>
+                        <td>
+                            <%= m.humedad !== undefined ? m.humedad.toFixed(1) + '%' : 'N/A' %>
+                        </td>
+                    </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+            
+            <!-- Paginación simple -->
+            <div class="pagination">
+                <% if (page > 1) { %>
+                <a href="/mediciones?sensorId=<%= sensorId || '' %>&ciudad=<%= ciudad || '' %>&page=<%= page - 1 %>" class="btn btn-outline">← Anterior</a>
+                <% } %>
+                <span class="page-info">Página <%= page %></span>
+                <% if (mediciones.length >= 20) { %>
+                <a href="/mediciones?sensorId=<%= sensorId || '' %>&ciudad=<%= ciudad || '' %>&page=<%= page + 1 %>" class="btn btn-outline">Siguiente →</a>
+                <% } %>
+            </div>
+            <% } %>
+        </div>
+    </div>
+</main>
+
+<%- include('../partials/footer') %>

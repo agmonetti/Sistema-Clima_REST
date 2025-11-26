@@ -1,0 +1,47 @@
+<nav class="navbar">
+    <div class="navbar-brand">
+        <a href="/" class="logo">🌤️ ClimaApp</a>
+    </div>
+    <% if (user) { %>
+    <ul class="navbar-menu">
+        <li><a href="/sensores" class="nav-link">📡 Sensores</a></li>
+        <li><a href="/mediciones" class="nav-link">📊 Mediciones</a></li>
+        <li><a href="/procesos" class="nav-link">⚙️ Procesos</a></li>
+        <li><a href="/mensajeria" class="nav-link">💬 Mensajería</a></li>
+        <li><a href="/transacciones" class="nav-link">💰 Cuenta</a></li>
+        <% if (user.rol === 'admin') { %>
+        <li><a href="/usuarios" class="nav-link">👥 Usuarios</a></li>
+        <% } %>
+    </ul>
+    <div class="navbar-user">
+        <span class="user-info">
+            <span class="user-name"><%= user.nombre %></span>
+            <span class="badge badge-<%= user.rol === 'admin' ? 'danger' : user.rol === 'tecnico' ? 'warning' : 'primary' %>">
+                <%= user.rol %>
+            </span>
+        </span>
+        <form action="/auth/logout" method="POST" style="display: inline;">
+            <button type="submit" class="btn btn-outline">Cerrar Sesión</button>
+        </form>
+    </div>
+    <% } else { %>
+    <div class="navbar-auth">
+        <a href="/auth/login" class="btn btn-outline">Iniciar Sesión</a>
+        <a href="/auth/register" class="btn btn-primary">Registrarse</a>
+    </div>
+    <% } %>
+</nav>
+
+<% if (typeof success !== 'undefined' && success) { %>
+<div class="alert alert-success">
+    <%= success %>
+    <button class="alert-close" onclick="this.parentElement.remove()">×</button>
+</div>
+<% } %>
+
+<% if (typeof error !== 'undefined' && error) { %>
+<div class="alert alert-danger">
+    <%= error %>
+    <button class="alert-close" onclick="this.parentElement.remove()">×</button>
+</div>
+<% } %>

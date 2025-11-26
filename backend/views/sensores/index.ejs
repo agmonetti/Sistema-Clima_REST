@@ -1,0 +1,83 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar') %>
+
+<main class="main-content">
+    <div class="container">
+        <div class="page-header">
+            <h1>📡 Sensores</h1>
+            <% if (user.rol === 'admin' || user.rol === 'tecnico') { %>
+            <a href="/sensores/nuevo" class="btn btn-primary">+ Nuevo Sensor</a>
+            <% } %>
+        </div>
+
+        <!-- Filtros -->
+        <div class="filters-section">
+            <form action="/sensores" method="GET" class="filters-form">
+                <div class="form-group">
+                    <label for="ciudad">Ciudad</label>
+                    <select name="ciudad" id="ciudad" class="form-control">
+                        <option value="">Todas las ciudades</option>
+                        <% ciudades.forEach(function(c) { %>
+                        <option value="<%= c %>" <%= ciudad === c ? 'selected' : '' %>><%= c %></option>
+                        <% }); %>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-secondary">Filtrar</button>
+                <% if (ciudad) { %>
+                <a href="/sensores" class="btn btn-outline">Limpiar</a>
+                <% } %>
+            </form>
+        </div>
+
+        <!-- Tabla de sensores -->
+        <div class="table-container">
+            <% if (sensores.length === 0) { %>
+            <div class="empty-state">
+                <p>No se encontraron sensores</p>
+            </div>
+            <% } else { %>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Tipo</th>
+                        <th>Ciudad</th>
+                        <th>País</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% sensores.forEach(function(sensor) { %>
+                    <tr>
+                        <td><strong><%= sensor.nombre %></strong></td>
+                        <td><%= sensor.configuracion?.tipo_sensor || 'N/A' %></td>
+                        <td><%= sensor.ubicacion?.ciudad || 'N/A' %></td>
+                        <td><%= sensor.ubicacion?.pais || 'N/A' %></td>
+                        <td>
+                            <span class="badge badge-<%= sensor.configuracion?.estado_sensor === 'activo' ? 'success' : sensor.configuracion?.estado_sensor === 'inactivo' ? 'warning' : 'danger' %>">
+                                <%= sensor.configuracion?.estado_sensor || 'desconocido' %>
+                            </span>
+                        </td>
+                        <td class="actions">
+                            <a href="/sensores/<%= sensor._id %>" class="btn btn-sm btn-info">Ver</a>
+                            <% if (user.rol === 'admin' || user.rol === 'tecnico') { %>
+                            <a href="/sensores/<%= sensor._id %>/editar" class="btn btn-sm btn-warning">Editar</a>
+                            <% } %>
+                            <% if (user.rol === 'admin') { %>
+                            <form action="/sensores/<%= sensor._id %>?_method=DELETE" method="POST" style="display:inline;" 
+                                  onsubmit="return confirm('¿Estás seguro de eliminar este sensor?');">
+                                <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+                            </form>
+                            <% } %>
+                        </td>
+                    </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+            <% } %>
+        </div>
+    </div>
+</main>
+
+<%- include('../partials/footer') %>
