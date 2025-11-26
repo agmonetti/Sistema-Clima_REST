@@ -1,15 +1,5 @@
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 import * as UsuarioRepository from '../repositories/postgres/usuario.repository.js';
-
-
-const JWT_SECRET = process.env.JWT_SECRET;
-
-
-if (!JWT_SECRET) {
-    console.error("FATAL ERROR: La variable de entorno JWT_SECRET no está definida.");
-    process.exit(1); 
-}
 
 /**
  * Lógica de REGISTRO
@@ -18,34 +8,36 @@ if (!JWT_SECRET) {
  * 3. Retornar el usuario creado (sin la contraseña).
  */
 export async function register(datosUsuario) {
-    const { nombre, mail, password} = datosUsuario; //ignoramos el rol para prevenir las inyecciones
+    const { nombre, mail, password, rol_descripcion } = datosUsuario;
 
-    //revisamos si existe
+    // Revisamos si existe
     const usuarioExistente = await UsuarioRepository.buscarPorEmail(mail);
     if (usuarioExistente) {
         throw new Error('El email ya está registrado');
     }
 
-    //hasheamos la contraseña
+    // Hasheamos la contraseña
     const salt = await bcrypt.genSalt(10);
-    const passwordHash = await bcrypt.hash(password, salt); // Encripta
+    const passwordHash = await bcrypt.hash(password, salt);
 
-    // retornamos con la contraseña hasheada y el rol forzado
+    // Creamos el usuario con la contraseña hasheada
     const nuevoId = await UsuarioRepository.crearUsuarios({
         nombre,
         mail,
         password: passwordHash,
-        rol_descripcion: 'usuario' // rol por defecto
+        rol_descripcion: rol_descripcion || 'usuario' // rol por defecto
     });
 
     return { id: nuevoId, nombre, mail };
 }
 
 /**
- * Lógica de LOGIN
+ * Lógica de LOGIN (SSR - Sin JWT)
  * 1. Buscar usuario por email.
  * 2. Comparar contraseña (hash vs plano).
- * 3. Generar Token JWT.
+ * 3. Retornar datos del usuario para la sesión.
+ * 
+ * Nota: El manejo de sesiones se hace en el controlador.
  */
 export async function login({ mail, password }) {
     // Buscamos el usuario
@@ -57,20 +49,14 @@ export async function login({ mail, password }) {
         throw new Error('Acceso denegado: Esta cuenta ha sido eliminada o desactivada.');
     }
 
-    // validamos que la contraseña coincida, previo se desencripta
+    // Validamos que la contraseña coincida
     const esPasswordValido = await bcrypt.compare(password, usuario.contraseña);
     if (!esPasswordValido) {
         throw new Error('Credenciales invalidas');
     }
 
-    //generamos un token para el manejo de las sesiones
-    const token = jwt.sign(
-        { id: usuario.usuario_id, rol: usuario.rol },
-        JWT_SECRET,
-        { expiresIn: '1h' }
-    );
-
-    // Retornamos datos del usuario y el token (sin la contraseña)
+    // Retornamos datos del usuario (sin la contraseña)
+    // El controlador se encarga de crear la sesión
     const { contraseña, ...usuarioSinPass } = usuario;
-    return { user: usuarioSinPass, token };
+    return { user: usuarioSinPass };
 }
