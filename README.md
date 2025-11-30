@@ -61,8 +61,8 @@ El frontend permite interactuar visualmente con todas las funcionalidades expues
 
 ### Frontend
 
-* Framework elegido por el equipo (React / Next.js / Vue / etc.)
-* Consumo de endpoints vía fetch/axios
+* HTML + CSS + JavaScript Vanilla
+* Consumo de endpoints
 * Manejo de sesiones JWT
 
 ---
