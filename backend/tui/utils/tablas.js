@@ -1,0 +1,138 @@
+/**
+ * Funciones de utilidad para crear tablas bonitas con cli-table3
+ */
+import Table from 'cli-table3';
+import { colorearEstado, colorearTemperatura, colorearRol, colorearSaldo, TITULO } from './colores.js';
+
+/**
+ * Crea una tabla de sensores formateada
+ */
+export function crearTablaSensores(sensores) {
+    const table = new Table({
+        head: [TITULO('ID'), TITULO('Nombre'), TITULO('Ciudad'), TITULO('País'), TITULO('Tipo'), TITULO('Estado')],
+        colWidths: [26, 20, 15, 15, 18, 12]
+    });
+
+    sensores.forEach(sensor => {
+        table.push([
+            sensor._id?.toString() || 'N/A',
+            sensor.nombre || 'N/A',
+            sensor.ubicacion?.ciudad || 'N/A',
+            sensor.ubicacion?.pais || 'N/A',
+            sensor.configuracion?.tipo_sensor || 'N/A',
+            colorearEstado(sensor.configuracion?.estado_sensor || 'N/A')
+        ]);
+    });
+
+    return table.toString();
+}
+
+/**
+ * Crea una tabla de mediciones formateada
+ */
+export function crearTablaMediciones(mediciones) {
+    const table = new Table({
+        head: [TITULO('ID'), TITULO('Sensor'), TITULO('Temperatura'), TITULO('Humedad'), TITULO('Fecha')],
+        colWidths: [26, 20, 15, 12, 22]
+    });
+
+    mediciones.forEach(medicion => {
+        const sensorNombre = medicion.sensor_id?.nombre || medicion.sensor_id?.toString()?.slice(-6) || 'N/A';
+        table.push([
+            medicion._id?.toString() || 'N/A',
+            sensorNombre,
+            colorearTemperatura(medicion.temperatura),
+            medicion.humedad !== undefined ? `${medicion.humedad}%` : 'N/A',
+            medicion.timestamp ? new Date(medicion.timestamp).toLocaleString() : 'N/A'
+        ]);
+    });
+
+    return table.toString();
+}
+
+/**
+ * Crea una tabla de usuarios formateada
+ */
+export function crearTablaUsuarios(usuarios) {
+    const table = new Table({
+        head: [TITULO('ID'), TITULO('Nombre'), TITULO('Email'), TITULO('Rol'), TITULO('Activo')],
+        colWidths: [8, 20, 30, 12, 10]
+    });
+
+    usuarios.forEach(usuario => {
+        table.push([
+            usuario.usuario_id || 'N/A',
+            usuario.nombre || 'N/A',
+            usuario.mail || 'N/A',
+            colorearRol(usuario.rol),
+            usuario.isActive ? '✓' : '✗'
+        ]);
+    });
+
+    return table.toString();
+}
+
+/**
+ * Crea una tabla de procesos disponibles
+ */
+export function crearTablaProcesos(procesos) {
+    const table = new Table({
+        head: [TITULO('ID'), TITULO('Nombre'), TITULO('Código'), TITULO('Costo'), TITULO('Descripción')],
+        colWidths: [26, 25, 25, 10, 35]
+    });
+
+    procesos.forEach(proceso => {
+        table.push([
+            proceso._id?.toString() || 'N/A',
+            proceso.nombre || 'N/A',
+            proceso.codigo || 'N/A',
+            colorearSaldo(proceso.costo),
+            (proceso.descripcion || 'N/A').substring(0, 32) + '...'
+        ]);
+    });
+
+    return table.toString();
+}
+
+/**
+ * Crea una tabla de historial de transacciones
+ */
+export function crearTablaHistorial(historial) {
+    const table = new Table({
+        head: [TITULO('ID'), TITULO('Proceso'), TITULO('Costo'), TITULO('Estado'), TITULO('Fecha')],
+        colWidths: [8, 30, 10, 15, 22]
+    });
+
+    historial.forEach(item => {
+        table.push([
+            item.solicitud_id || 'N/A',
+            item.proceso_nombre || 'N/A',
+            colorearSaldo(item.costo),
+            colorearEstado(item.estado),
+            item.fecha_solicitud ? new Date(item.fecha_solicitud).toLocaleString() : 'N/A'
+        ]);
+    });
+
+    return table.toString();
+}
+
+/**
+ * Crea una tabla de conversaciones/chats
+ */
+export function crearTablaConversaciones(conversaciones) {
+    const table = new Table({
+        head: [TITULO('ID'), TITULO('Tipo'), TITULO('Nombre/Participantes'), TITULO('Miembros')],
+        colWidths: [26, 12, 40, 10]
+    });
+
+    conversaciones.forEach(conv => {
+        table.push([
+            conv._id?.toString() || 'N/A',
+            conv.esGrupal ? 'Grupo' : 'Privado',
+            conv.nombre || conv.miembros?.map(m => m.toString()).join(', ') || 'N/A',
+            conv.miembros?.length || 0
+        ]);
+    });
+
+    return table.toString();
+}
