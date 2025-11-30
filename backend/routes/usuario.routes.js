@@ -1,42 +1,32 @@
 import { Router } from 'express';
-import { verifyToken, requireRole } from '../middlewares/auth.middleware.js';
+import { requireAuth, requireRole } from '../middlewares/auth.middleware.js';
 import * as UsuarioController from '../controllers/usuario.controller.js';
+
 const router = Router();
-router.use(verifyToken);
+router.use(requireAuth);
 
-router.delete('/me',
-    verifyToken,
-    UsuarioController.darseDeBaja
-);
+// Darse de baja (usuario actual)
+router.delete('/me', UsuarioController.darseDeBaja);
 
-// Eliminar usuario
-// 1. verifyToken: Asegura que quien llama esté logueado.
-// 2. requireRole(['admin']): Asegura que SOLO un admin pase.
-router.delete('/:id', 
-    verifyToken, 
-    requireRole(['admin']), 
-    UsuarioController.deleteUser
-);
+// Rutas de administración - Solo admin
+router.get('/', requireRole(['admin']), UsuarioController.listarUsuarios);
+router.get('/nuevo', requireRole(['admin']), UsuarioController.mostrarFormularioNuevo);
+router.post('/', requireRole(['admin']), UsuarioController.crearUsuario);
 
-// Listar todos los usuarios
-// 1. verifyToken: Asegura que quien llama esté logueado.
-// 2. requireRole(['admin']): Asegura que SOLO un admin pase.
-router.get('/', 
-    verifyToken, 
-    requireRole(['admin']), 
-    UsuarioController.getUsers
-);
+// Ver detalle de usuario
+router.get('/:id', requireRole(['admin']), UsuarioController.verUsuario);
 
-router.get('/id/:id',
-    UsuarioController.buscarPorId)    
-;
+// Editar usuario
+router.get('/:id/editar', requireRole(['admin']), UsuarioController.mostrarFormularioEditar);
+router.put('/:id', requireRole(['admin']), UsuarioController.actualizarUsuario);
 
-router.patch('/:id/revivir',
-    verifyToken,
-    requireRole(['admin']),
-    UsuarioController.revivirUsuario
-);
+// Eliminar (desactivar) usuario
+router.delete('/:id', requireRole(['admin']), UsuarioController.deleteUser);
 
+// Reactivar usuario
+router.patch('/:id/revivir', requireRole(['admin']), UsuarioController.revivirUsuario);
 
+// JSON endpoints para compatibilidad
+router.get('/id/:id', UsuarioController.buscarPorId);
 
 export default router;

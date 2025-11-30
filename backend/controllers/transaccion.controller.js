@@ -1,55 +1,104 @@
 import * as TransaccionService from '../services/transaccion.service.js';
 
-// solicitudes de un proceso
+// Listar cuenta y transacciones - SSR
+export const listarTransacciones = async (req, res) => {
+    try {
+        const usuarioId = req.user.id;
+        const saldo = await TransaccionService.getSaldo(usuarioId);
+        const historial = await TransaccionService.obtenerHistorial(usuarioId);
+        
+        res.render('transacciones/index', {
+            title: 'Mi Cuenta',
+            saldo,
+            historial
+        });
+    } catch (error) {
+        req.session.error = error.message;
+        res.render('transacciones/index', {
+            title: 'Mi Cuenta',
+            saldo: 0,
+            historial: []
+        });
+    }
+};
+
+// Mostrar formulario de recarga
+export const mostrarFormularioPagar = async (req, res) => {
+    try {
+        const saldo = await TransaccionService.getSaldo(req.user.id);
+        
+        res.render('transacciones/pagar', {
+            title: 'Recargar Saldo',
+            saldo
+        });
+    } catch (error) {
+        req.session.error = error.message;
+        res.redirect('/transacciones');
+    }
+};
+
+// Ver factura
+export const verFactura = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const historial = await TransaccionService.obtenerHistorial(req.user.id);
+        const factura = historial.find(h => h.factura_id === parseInt(id));
+        
+        if (!factura) {
+            req.session.error = 'Factura no encontrada';
+            return res.redirect('/transacciones');
+        }
+        
+        res.render('transacciones/factura', {
+            title: 'Factura #' + id,
+            factura
+        });
+    } catch (error) {
+        req.session.error = error.message;
+        res.redirect('/transacciones');
+    }
+};
+
+// Solicitar proceso - SSR
 export const solicitarProceso = async (req, res) => {
     try {
-        //extraemos los datos del body
         const usuarioId = req.user.id; 
         const { procesoId, parametros } = req.body; 
-        // validacion de datos
+        
         if (!procesoId) {
-            return res.status(400).json({ 
-                error: 'Faltan datos obligatorios: usuario_id, proceso_id' 
-            });
+            req.session.error = 'Faltan datos obligatorios';
+            return res.redirect('/procesos');
         }
 
-        console.log(`Nueva solicitud recibida. Usuario: ${usuarioId}, Proceso: ${procesoId}`);
-
-        // llamamos al servicio
         const resultado = await TransaccionService.solicitarProceso({
             usuarioId: usuarioId,
             procesoId: procesoId,
             parametros: parametros || {} 
         });
 
-        res.status(200).json(resultado);
+        req.session.success = `Proceso solicitado exitosamente. Solicitud #${resultado.ticket.solicitud_id}`;
+        res.redirect('/procesos/' + resultado.ticket.solicitud_id);
 
     } catch (error) {
         console.error('Error en la transacción:', error.message);
-        
-        // manejo de errores especificos
-        if (error.message.includes('Saldo insuficiente') || error.message.includes('no existe')) {
-            return res.status(400).json({ error: error.message });
-        }
-        
-        res.status(500).json({ error: 'Error interno procesando la solicitud.' });
+        req.session.error = error.message;
+        res.redirect('/procesos');
     }
 };
 
-// verhistorial de procesos de un usuario
+// Ver historial - SSR
 export const verHistorial = async (req, res) => {
     try {
-        const { usuarioId } = req.params; // Viene de la URL
-        
+        const { usuarioId } = req.params;
         const historial = await TransaccionService.obtenerHistorial(usuarioId);
-        
-        res.status(200).json(historial);
+        res.json(historial);
     } catch (error) {
         console.error('Error obteniendo historial:', error);
         res.status(500).json({ error: 'Error al obtener el historial.' });
     }
 };
-// obtener saldo actual
+
+// Obtener saldo - JSON
 export const obtenerSaldo = async (req, res) => {
     try {
         const userId = req.user.id; 
@@ -59,7 +108,8 @@ export const obtenerSaldo = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
-// recargar saldo
+
+// Recargar saldo - SSR
 export const recargar = async (req, res) => {
     try {
         const userId = req.user.id;
@@ -67,11 +117,10 @@ export const recargar = async (req, res) => {
 
         const nuevoSaldo = await TransaccionService.cargarDinero(userId, parseFloat(monto));
         
-        res.json({ 
-            message: "Carga exitosa", 
-            nuevoSaldo: nuevoSaldo 
-        });
+        req.session.success = `Recarga exitosa. Nuevo saldo: $${nuevoSaldo.toFixed(2)}`;
+        res.redirect('/transacciones');
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        req.session.error = error.message;
+        res.redirect('/transacciones/pagar');
     }
 };

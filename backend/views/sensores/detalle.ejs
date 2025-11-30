@@ -1,0 +1,77 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar') %>
+
+<main class="main-content">
+    <div class="container">
+        <div class="page-header">
+            <h1>📡 Detalle del Sensor</h1>
+            <a href="/sensores" class="btn btn-outline">← Volver</a>
+        </div>
+
+        <div class="detail-card">
+            <div class="detail-header">
+                <h2><%= sensor.nombre %></h2>
+                <span class="badge badge-<%= sensor.configuracion?.estado_sensor === 'activo' ? 'success' : sensor.configuracion?.estado_sensor === 'inactivo' ? 'warning' : 'danger' %> badge-lg">
+                    <%= sensor.configuracion?.estado_sensor || 'desconocido' %>
+                </span>
+            </div>
+
+            <div class="detail-section">
+                <h3>Configuración</h3>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <span class="label">Tipo de Sensor</span>
+                        <span class="value"><%= sensor.configuracion?.tipo_sensor || 'N/A' %></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Fecha Inicio Medición</span>
+                        <span class="value"><%= sensor.configuracion?.fechaInicioMedicion ? new Date(sensor.configuracion.fechaInicioMedicion).toLocaleDateString('es-AR') : 'N/A' %></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-section">
+                <h3>Ubicación</h3>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <span class="label">País</span>
+                        <span class="value"><%= sensor.ubicacion?.pais || 'N/A' %></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Ciudad</span>
+                        <span class="value"><%= sensor.ubicacion?.ciudad || 'N/A' %></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Coordenadas</span>
+                        <span class="value">
+                            <% if (sensor.ubicacion?.lat && sensor.ubicacion?.lon) { %>
+                            <%= sensor.ubicacion.lat.toFixed(4) %>, <%= sensor.ubicacion.lon.toFixed(4) %>
+                            <% } else { %>
+                            N/A
+                            <% } %>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-actions">
+                <a href="/mediciones?sensorId=<%= sensor._id %>" class="btn btn-info">
+                    📊 Ver Mediciones
+                </a>
+                <% if (user.rol === 'admin' || user.rol === 'tecnico') { %>
+                <a href="/sensores/<%= sensor._id %>/editar" class="btn btn-warning">
+                    ✏️ Editar
+                </a>
+                <% } %>
+                <% if (user.rol === 'admin') { %>
+                <form action="/sensores/<%= sensor._id %>?_method=DELETE" method="POST" style="display:inline;" 
+                      onsubmit="return confirm('¿Estás seguro de eliminar este sensor?');">
+                    <button type="submit" class="btn btn-danger">🗑️ Eliminar</button>
+                </form>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</main>
+
+<%- include('../partials/footer') %>

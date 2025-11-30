@@ -1,0 +1,43 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar') %>
+
+<main class="main-content">
+    <div class="container">
+        <div class="page-header">
+            <h1>💳 Recargar Saldo</h1>
+            <a href="/transacciones" class="btn btn-outline">← Volver</a>
+        </div>
+
+        <div class="form-container">
+            <div class="balance-info">
+                <h3>Saldo Actual</h3>
+                <p class="balance-amount">$<%= saldo ? saldo.toFixed(2) : '0.00' %></p>
+            </div>
+
+            <form action="/transacciones/recargar" method="POST" class="form-card">
+                <h2>Realizar Recarga</h2>
+                
+                <div class="form-group">
+                    <label for="monto">Monto a Recargar *</label>
+                    <input type="number" id="monto" name="monto" required 
+                           min="1" step="0.01" placeholder="Ej: 100.00" class="form-control">
+                </div>
+
+                <div class="quick-amounts">
+                    <p>Montos sugeridos:</p>
+                    <button type="button" class="btn btn-outline" onclick="document.getElementById('monto').value='50'">$50</button>
+                    <button type="button" class="btn btn-outline" onclick="document.getElementById('monto').value='100'">$100</button>
+                    <button type="button" class="btn btn-outline" onclick="document.getElementById('monto').value='250'">$250</button>
+                    <button type="button" class="btn btn-outline" onclick="document.getElementById('monto').value='500'">$500</button>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary btn-lg">Confirmar Recarga</button>
+                    <a href="/transacciones" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+<%- include('../partials/footer') %>

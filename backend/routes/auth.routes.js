@@ -1,11 +1,26 @@
-import {verifyToken} from '../middlewares/auth.middleware.js';
+import { requireAuth } from '../middlewares/auth.middleware.js';
 import { Router } from 'express';
-import { register, login, latido } from '../controllers/auth.controller.js';
+import { 
+    register, 
+    login, 
+    logout, 
+    latido, 
+    mostrarLogin, 
+    mostrarRegistro 
+} from '../controllers/auth.controller.js';
 
 const router = Router();
 
+// Rutas públicas - Mostrar formularios
+router.get('/login', mostrarLogin);
+router.get('/register', mostrarRegistro);
 
-router.post('/register', register); // POST /api/auth/register
-router.post('/login', login);       // POST /api/auth/login
-router.post('/ping', verifyToken, latido); // POST /api/auth/ping
+// Rutas públicas - Procesar formularios
+router.post('/register', register);
+router.post('/login', login);
+
+// Rutas protegidas
+router.post('/logout', logout);
+router.post('/ping', requireAuth, latido);
+
 export default router;

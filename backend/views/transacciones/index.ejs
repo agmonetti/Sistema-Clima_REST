@@ -1,0 +1,78 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar') %>
+
+<main class="main-content">
+    <div class="container">
+        <div class="page-header">
+            <h1>💰 Mi Cuenta</h1>
+        </div>
+
+        <!-- Saldo actual -->
+        <section class="section">
+            <div class="balance-card">
+                <h2>Saldo Disponible</h2>
+                <p class="balance-amount">$<%= saldo ? saldo.toFixed(2) : '0.00' %></p>
+                <a href="/transacciones/pagar" class="btn btn-primary">+ Recargar Saldo</a>
+            </div>
+        </section>
+
+        <!-- Historial de facturas -->
+        <section class="section">
+            <h2>📋 Historial de Transacciones</h2>
+            
+            <% if (historial.length === 0) { %>
+            <div class="empty-state">
+                <p>No tienes transacciones registradas</p>
+            </div>
+            <% } else { %>
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID Solicitud</th>
+                            <th>Proceso</th>
+                            <th>Fecha</th>
+                            <th>Estado</th>
+                            <th>Factura</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% historial.forEach(function(h) { %>
+                        <tr>
+                            <td>#<%= h.solicitud_id %></td>
+                            <td><%= h.proceso_mongo_id %></td>
+                            <td><%= new Date(h.fechaSolicitud).toLocaleString('es-AR') %></td>
+                            <td>
+                                <span class="badge badge-<%= h.isCompleted ? 'success' : 'warning' %>">
+                                    <%= h.isCompleted ? 'Completado' : 'Pendiente' %>
+                                </span>
+                            </td>
+                            <td>
+                                <% if (h.factura_id) { %>
+                                <span class="badge badge-<%= h.estadoFactura === 'pagada' ? 'success' : h.estadoFactura === 'pendiente' ? 'warning' : 'danger' %>">
+                                    <%= h.estadoFactura || 'N/A' %>
+                                </span>
+                                <% } else { %>
+                                <span class="text-muted">N/A</span>
+                                <% } %>
+                            </td>
+                            <td>
+                                <% if (h.factura_id) { %>
+                                <a href="/transacciones/factura/<%= h.factura_id %>" class="btn btn-sm btn-info">Ver Factura</a>
+                                <% } %>
+                                <% if (h.resultado) { %>
+                                <a href="/procesos/<%= h.solicitud_id %>" class="btn btn-sm btn-secondary">Ver Resultado</a>
+                                <% } %>
+                            </td>
+                        </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+            <% } %>
+        </section>
+    </div>
+</main>
+
+<%- include('../partials/footer') %>

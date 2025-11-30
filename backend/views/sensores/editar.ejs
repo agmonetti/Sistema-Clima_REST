@@ -1,0 +1,82 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar') %>
+
+<main class="main-content">
+    <div class="container">
+        <div class="page-header">
+            <h1>✏️ Editar Sensor</h1>
+            <a href="/sensores" class="btn btn-outline">← Volver</a>
+        </div>
+
+        <div class="form-container">
+            <form action="/sensores/<%= sensor._id %>?_method=PUT" method="POST" class="form-card">
+                <h2>Información del Sensor</h2>
+                
+                <div class="form-group">
+                    <label for="nombre">Nombre del Sensor *</label>
+                    <input type="text" id="nombre" name="nombre" required 
+                           value="<%= sensor.nombre %>" class="form-control">
+                </div>
+
+                <h3>Configuración</h3>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="tipo_sensor">Tipo de Sensor *</label>
+                        <select name="tipo_sensor" id="tipo_sensor" required class="form-control">
+                            <option value="temperatura" <%= sensor.configuracion?.tipo_sensor === 'temperatura' ? 'selected' : '' %>>Temperatura</option>
+                            <option value="humedad" <%= sensor.configuracion?.tipo_sensor === 'humedad' ? 'selected' : '' %>>Humedad</option>
+                            <option value="temperatura/humedad" <%= sensor.configuracion?.tipo_sensor === 'temperatura/humedad' ? 'selected' : '' %>>Temperatura/Humedad</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="estado_sensor">Estado</label>
+                        <select name="estado_sensor" id="estado_sensor" class="form-control">
+                            <option value="activo" <%= sensor.configuracion?.estado_sensor === 'activo' ? 'selected' : '' %>>Activo</option>
+                            <option value="inactivo" <%= sensor.configuracion?.estado_sensor === 'inactivo' ? 'selected' : '' %>>Inactivo</option>
+                            <option value="falla" <%= sensor.configuracion?.estado_sensor === 'falla' ? 'selected' : '' %>>En Falla</option>
+                        </select>
+                    </div>
+                </div>
+
+                <h3>Ubicación</h3>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="pais">País *</label>
+                        <input type="text" id="pais" name="pais" required 
+                               value="<%= sensor.ubicacion?.pais || '' %>" class="form-control">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="ciudad">Ciudad *</label>
+                        <input type="text" id="ciudad" name="ciudad" required 
+                               value="<%= sensor.ubicacion?.ciudad || '' %>" class="form-control">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="lat">Latitud *</label>
+                        <input type="number" id="lat" name="lat" required step="any"
+                               value="<%= sensor.ubicacion?.lat || '' %>" class="form-control">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="lon">Longitud *</label>
+                        <input type="number" id="lon" name="lon" required step="any"
+                               value="<%= sensor.ubicacion?.lon || '' %>" class="form-control">
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                    <a href="/sensores/<%= sensor._id %>" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+<%- include('../partials/footer') %>

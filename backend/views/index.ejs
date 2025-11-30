@@ -1,0 +1,64 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+
+<main class="main-content">
+    <div class="container">
+        <% if (user) { %>
+        <div class="welcome-section">
+            <h1>Bienvenido, <%= user.nombre %></h1>
+            <p>Sistema de Monitoreo Climático</p>
+            
+            <div class="dashboard-cards">
+                <a href="/sensores" class="dashboard-card">
+                    <span class="card-icon">📡</span>
+                    <h3>Sensores</h3>
+                    <p>Gestionar sensores de temperatura</p>
+                </a>
+                
+                <a href="/mediciones" class="dashboard-card">
+                    <span class="card-icon">📊</span>
+                    <h3>Mediciones</h3>
+                    <p>Ver historial de mediciones</p>
+                </a>
+                
+                <a href="/procesos" class="dashboard-card">
+                    <span class="card-icon">⚙️</span>
+                    <h3>Procesos</h3>
+                    <p>Solicitar informes y análisis</p>
+                </a>
+                
+                <a href="/mensajeria" class="dashboard-card">
+                    <span class="card-icon">💬</span>
+                    <h3>Mensajería</h3>
+                    <p>Chat con otros usuarios</p>
+                </a>
+                
+                <a href="/transacciones" class="dashboard-card">
+                    <span class="card-icon">💰</span>
+                    <h3>Mi Cuenta</h3>
+                    <p>Saldo y facturación</p>
+                </a>
+                
+                <% if (user.rol === 'admin') { %>
+                <a href="/usuarios" class="dashboard-card">
+                    <span class="card-icon">👥</span>
+                    <h3>Usuarios</h3>
+                    <p>Administrar usuarios del sistema</p>
+                </a>
+                <% } %>
+            </div>
+        </div>
+        <% } else { %>
+        <div class="landing-section">
+            <h1>🌤️ ClimaApp</h1>
+            <p>Sistema de Monitoreo Climático</p>
+            <div class="landing-actions">
+                <a href="/auth/login" class="btn btn-primary btn-lg">Iniciar Sesión</a>
+                <a href="/auth/register" class="btn btn-secondary btn-lg">Registrarse</a>
+            </div>
+        </div>
+        <% } %>
+    </div>
+</main>
+
+<%- include('partials/footer') %>

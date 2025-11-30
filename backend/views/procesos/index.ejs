@@ -1,0 +1,78 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar') %>
+
+<main class="main-content">
+    <div class="container">
+        <div class="page-header">
+            <h1>⚙️ Procesos</h1>
+        </div>
+
+        <!-- Catálogo de Procesos -->
+        <section class="section">
+            <h2>📋 Catálogo de Procesos Disponibles</h2>
+            <div class="process-cards">
+                <% procesos.forEach(function(p) { %>
+                <div class="process-card">
+                    <div class="process-header">
+                        <h3><%= p.nombre %></h3>
+                        <span class="process-cost">$<%= p.costo %></span>
+                    </div>
+                    <p class="process-description"><%= p.descripcion || 'Sin descripción' %></p>
+                    <p class="process-code"><code><%= p.codigo %></code></p>
+                    <a href="/procesos/solicitar?procesoId=<%= p._id %>" class="btn btn-primary">
+                        Solicitar
+                    </a>
+                </div>
+                <% }); %>
+            </div>
+        </section>
+
+        <!-- Mis Solicitudes -->
+        <section class="section">
+            <h2>📜 Mis Solicitudes</h2>
+            
+            <% if (solicitudes.length === 0) { %>
+            <div class="empty-state">
+                <p>No tienes solicitudes de procesos aún</p>
+            </div>
+            <% } else { %>
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Proceso</th>
+                            <th>Fecha</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% solicitudes.forEach(function(s) { %>
+                        <tr>
+                            <td>#<%= s.solicitud_id %></td>
+                            <td><%= s.proceso_mongo_id %></td>
+                            <td><%= new Date(s.fechaSolicitud).toLocaleString('es-AR') %></td>
+                            <td>
+                                <span class="badge badge-<%= s.isCompleted ? 'success' : 'warning' %>">
+                                    <%= s.isCompleted ? 'Completado' : 'Pendiente' %>
+                                </span>
+                            </td>
+                            <td>
+                                <% if (s.isCompleted && s.resultado) { %>
+                                <a href="/procesos/<%= s.solicitud_id %>" class="btn btn-sm btn-info">Ver Resultado</a>
+                                <% } else { %>
+                                <span class="text-muted">Procesando...</span>
+                                <% } %>
+                            </td>
+                        </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+            <% } %>
+        </section>
+    </div>
+</main>
+
+<%- include('../partials/footer') %>

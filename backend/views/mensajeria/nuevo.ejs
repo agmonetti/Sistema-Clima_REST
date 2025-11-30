@@ -1,0 +1,68 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar') %>
+
+<main class="main-content">
+    <div class="container">
+        <div class="page-header">
+            <h1>💬 Nueva Conversación</h1>
+            <a href="/mensajeria" class="btn btn-outline">← Volver</a>
+        </div>
+
+        <div class="form-container">
+            <!-- Chat Privado -->
+            <div class="form-card">
+                <h2>👤 Chat Privado</h2>
+                <p>Inicia una conversación con otro usuario</p>
+                
+                <form action="/mensajeria/privado" method="POST">
+                    <div class="form-group">
+                        <label for="destinatarioId">Seleccionar Usuario</label>
+                        <select name="destinatarioId" id="destinatarioId" required class="form-control">
+                            <option value="">Seleccionar usuario...</option>
+                            <% usuarios.forEach(function(u) { %>
+                            <% if (u.usuario_id !== user.id) { %>
+                            <option value="<%= u.usuario_id %>">
+                                <%= u.nombre %> (<%= u.mail %>)
+                            </option>
+                            <% } %>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Iniciar Chat Privado</button>
+                </form>
+            </div>
+
+            <!-- Chat Grupal -->
+            <div class="form-card">
+                <h2>👥 Chat Grupal</h2>
+                <p>Crea un grupo con varios usuarios</p>
+                
+                <form action="/mensajeria/grupo" method="POST">
+                    <div class="form-group">
+                        <label for="nombre">Nombre del Grupo</label>
+                        <input type="text" id="nombre" name="nombre" 
+                               placeholder="Ej: Equipo de Desarrollo" class="form-control">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Participantes</label>
+                        <div class="checkbox-group">
+                            <% usuarios.forEach(function(u) { %>
+                            <% if (u.usuario_id !== user.id) { %>
+                            <label class="checkbox-item">
+                                <input type="checkbox" name="participantesIds" value="<%= u.usuario_id %>">
+                                <%= u.nombre %> (<%= u.mail %>)
+                            </label>
+                            <% } %>
+                            <% }); %>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Crear Grupo</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+<%- include('../partials/footer') %>

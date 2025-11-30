@@ -1,0 +1,73 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar') %>
+
+<main class="main-content">
+    <div class="container">
+        <div class="page-header">
+            <h1>👥 Gestión de Usuarios</h1>
+            <a href="/usuarios/nuevo" class="btn btn-primary">+ Nuevo Usuario</a>
+        </div>
+
+        <!-- Tabla de usuarios -->
+        <div class="table-container">
+            <% if (usuarios.length === 0) { %>
+            <div class="empty-state">
+                <p>No hay usuarios registrados</p>
+            </div>
+            <% } else { %>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Email</th>
+                        <th>Rol</th>
+                        <th>Estado</th>
+                        <th>Conectado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% usuarios.forEach(function(u) { %>
+                    <tr>
+                        <td>#<%= u.usuario_id %></td>
+                        <td><strong><%= u.nombre %></strong></td>
+                        <td><%= u.mail %></td>
+                        <td>
+                            <span class="badge badge-<%= u.rol === 'admin' ? 'danger' : u.rol === 'tecnico' ? 'warning' : 'primary' %>">
+                                <%= u.rol %>
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge badge-<%= u.isActive ? 'success' : 'secondary' %>">
+                                <%= u.isActive ? 'Activo' : 'Inactivo' %>
+                            </span>
+                        </td>
+                        <td>
+                            <span class="status-dot <%= u.isOnline ? 'online' : 'offline' %>"></span>
+                            <%= u.isOnline ? 'Online' : 'Offline' %>
+                        </td>
+                        <td class="actions">
+                            <a href="/usuarios/<%= u.usuario_id %>" class="btn btn-sm btn-info">Ver</a>
+                            <a href="/usuarios/<%= u.usuario_id %>/editar" class="btn btn-sm btn-warning">Editar</a>
+                            <% if (!u.isActive) { %>
+                            <form action="/usuarios/<%= u.usuario_id %>/revivir?_method=PATCH" method="POST" style="display:inline;">
+                                <button type="submit" class="btn btn-sm btn-success">Activar</button>
+                            </form>
+                            <% } else if (u.rol !== 'admin') { %>
+                            <form action="/usuarios/<%= u.usuario_id %>?_method=DELETE" method="POST" style="display:inline;"
+                                  onsubmit="return confirm('¿Desactivar este usuario?');">
+                                <button type="submit" class="btn btn-sm btn-danger">Desactivar</button>
+                            </form>
+                            <% } %>
+                        </td>
+                    </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+            <% } %>
+        </div>
+    </div>
+</main>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,101 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar') %>
+
+<main class="main-content">
+    <div class="container">
+        <div class="page-header">
+            <h1>💬 Mensajería</h1>
+            <a href="/mensajeria/nuevo" class="btn btn-primary">+ Nueva Conversación</a>
+        </div>
+
+        <div class="messaging-layout">
+            <!-- Lista de conversaciones -->
+            <aside class="chat-list">
+                <h3>Conversaciones</h3>
+                <% if (conversaciones.length === 0) { %>
+                <div class="empty-state-small">
+                    <p>No tienes conversaciones</p>
+                    <a href="/mensajeria/nuevo" class="btn btn-sm btn-primary">Iniciar chat</a>
+                </div>
+                <% } else { %>
+                <ul class="conversations">
+                    <% conversaciones.forEach(function(c) { %>
+                    <li class="conversation-item <%= chatActivo === String(c._id) ? 'active' : '' %>">
+                        <a href="/mensajeria?chat=<%= c._id %>">
+                            <span class="conversation-icon">
+                                <%= c.esGrupal ? '👥' : '👤' %>
+                            </span>
+                            <div class="conversation-info">
+                                <span class="conversation-name">
+                                    <% if (c.esGrupal) { %>
+                                        <%= c.nombre || 'Grupo sin nombre' %>
+                                    <% } else { %>
+                                        Chat Privado
+                                    <% } %>
+                                </span>
+                                <span class="conversation-members">
+                                    <%= c.miembros ? c.miembros.length : 0 %> miembros
+                                </span>
+                            </div>
+                        </a>
+                    </li>
+                    <% }); %>
+                </ul>
+                <% } %>
+            </aside>
+
+            <!-- Área de chat -->
+            <section class="chat-area">
+                <% if (chatActivo && mensajes) { %>
+                <div class="chat-header">
+                    <h3>Chat</h3>
+                </div>
+                
+                <div class="messages-container" id="messagesContainer">
+                    <% if (mensajes.length === 0) { %>
+                    <div class="empty-state-small">
+                        <p>No hay mensajes en esta conversación</p>
+                    </div>
+                    <% } else { %>
+                    <% mensajes.forEach(function(m) { %>
+                    <div class="message <%= m.remitente_id === user.id ? 'message-own' : 'message-other' %>">
+                        <div class="message-content">
+                            <span class="message-author">
+                                <%= m.remitente_id === user.id ? 'Tú' : 'Usuario ' + m.remitente_id %>
+                            </span>
+                            <p class="message-text"><%= m.texto %></p>
+                            <span class="message-time">
+                                <%= new Date(m.timestamp).toLocaleString('es-AR') %>
+                            </span>
+                        </div>
+                    </div>
+                    <% }); %>
+                    <% } %>
+                </div>
+
+                <form action="/mensajeria/<%= chatActivo %>/enviar" method="POST" class="message-form">
+                    <input type="text" name="texto" placeholder="Escribe un mensaje..." 
+                           required class="form-control" autocomplete="off">
+                    <button type="submit" class="btn btn-primary">Enviar</button>
+                </form>
+                <% } else { %>
+                <div class="chat-placeholder">
+                    <p>Selecciona una conversación o inicia una nueva</p>
+                </div>
+                <% } %>
+            </section>
+        </div>
+    </div>
+</main>
+
+<script>
+// Scroll automático al final de los mensajes
+document.addEventListener('DOMContentLoaded', function() {
+    const container = document.getElementById('messagesContainer');
+    if (container) {
+        container.scrollTop = container.scrollHeight;
+    }
+});
+</script>
+
+<%- include('../partials/footer') %>
