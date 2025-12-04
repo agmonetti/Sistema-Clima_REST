@@ -2,7 +2,6 @@
 
 Sistema poliglota de monitoreo de sensores climáticos compuesto por una **API REST** y un **frontend web** que consume todos los endpoints del backend.
 
-A diferencia de una TUI basada en terminal, en este proyecto:
 
 * La **API REST** expone endpoints HTTP (JSON)
 * El **frontend** interactúa con la API para:
