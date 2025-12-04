@@ -117,7 +117,3 @@ Proyecto académico — Universidad Argentina de la Empresa
 Materia: **Ingeniería de Datos II (No Relacionales)**
 
 **Autor:** Agustín Monetti
-
----
-
-Si querés, te preparo también un **README para el frontend**, o un **diagrama de endpoints** para documentar la API 🚀
